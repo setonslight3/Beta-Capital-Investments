@@ -504,9 +504,9 @@ router.get("/market/chart/:coinId", async (req: Request, res: Response) => {
   if (!product) { res.status(404).json({ message: `Unsupported coin: ${coinId}` }); return; }
 
   try {
-    // granularity in seconds: 3600 (1h) for ≤30d, 86400 (1d) for longer
-    // Coinbase max 300 candles per request
-    const granularity = days <= 30 ? 3600 : 86400;
+    // granularity: 3600 (1h) for ≤7d, 86400 (1d) for anything longer
+    // Coinbase max 300 candles per request; 30d×1h = 720 candles (exceeds limit)
+    const granularity = days <= 7 ? 3600 : 86400;
     const end = Math.floor(Date.now() / 1000);
     const start = end - days * 86400;
     const url = `https://api.exchange.coinbase.com/products/${product}/candles?granularity=${granularity}&start=${start}&end=${end}`;

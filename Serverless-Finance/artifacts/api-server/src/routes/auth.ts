@@ -43,10 +43,11 @@ export function serializeUser(user: typeof usersTable.$inferSelect) {
 }
 
 export function tierFromWealth(wealth: number): string {
-  if (wealth >= 500000) return "Diamond Reserve";
-  if (wealth >= 100000) return "Platinum Vault";
-  if (wealth >= 25000) return "Silver Sterling";
-  return "Gold Ore";
+  if (wealth >= 500000) return "Diamond Ore";
+  if (wealth >= 100000) return "Platinum Ore";
+  if (wealth >= 25000) return "Gold Ore";
+  if (wealth >= 5000) return "Silver Ore";
+  return "Bronze Ore";
 }
 
 router.post("/auth/signup", async (req: Request, res: Response) => {
@@ -80,7 +81,7 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
       passwordHash,
       isAdmin: admin,
       emailVerified: autoVerify,
-      tier: "Gold Ore",
+      tier: "Bronze Ore",
       theme: "sovereign",
       biometricEnabled: false,
       liquidity: 0,

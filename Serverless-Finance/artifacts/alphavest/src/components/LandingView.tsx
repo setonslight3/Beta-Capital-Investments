@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   Shield, Eye, TrendingUp, ArrowRight, BookOpen, X, Palette, Globe2, ChevronDown,
-  Phone, Mail, MapPin, CheckCircle2, Star, Linkedin, Twitter, Facebook,
+  Mail, CheckCircle2, Star, Linkedin, Twitter, Facebook, Instagram,
   Bitcoin, TrendingDown, Award, MessageCircle, HelpCircle, Zap, Clock
 } from 'lucide-react';
 import { ScreenType, UserSession, ColorThemeType } from '../types';
@@ -83,10 +83,26 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
   const [selectedSector, setSelectedSector] = useState<typeof INVESTMENT_SECTORS[0] | null>(null);
   const [showComingSoonSector, setShowComingSoonSector] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [platformSettings, setPlatformSettings] = useState<Record<string, string>>({
+    support_email: 'support@alphavest.space',
+    social_linkedin: '',
+    social_twitter: '',
+    social_facebook: '',
+    social_instagram: '',
+  });
   const sectorsRef = useRef<HTMLElement>(null);
   const plansRef = useRef<HTMLElement>(null);
 
   const tickers = useLivePrices();
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(d => {
+        if (d && typeof d === 'object') setPlatformSettings(prev => ({ ...prev, ...d }));
+      })
+      .catch(() => {});
+  }, []);
 
   const handleScrollToSectors = () => sectorsRef.current?.scrollIntoView({ behavior: 'smooth' });
   const handleScrollToPlans = () => plansRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -98,23 +114,26 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
       <div className="bg-brand-surface border-b border-brand-border/60 hidden md:block">
         <div className="max-w-7xl mx-auto px-6 md:px-16 h-10 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <a href="tel:+18004258392" className="flex items-center gap-1.5 text-[11px] font-sans text-brand-muted hover:text-brand-gold transition-colors">
-              <Phone className="w-3 h-3 text-brand-gold" />
-              +1 (800) 425-8392
-            </a>
-            <a href="mailto:support@alphavest.com" className="flex items-center gap-1.5 text-[11px] font-sans text-brand-muted hover:text-brand-gold transition-colors">
-              <Mail className="w-3 h-3 text-brand-gold" />
-              support@alphavest.com
-            </a>
-            <span className="flex items-center gap-1.5 text-[11px] font-sans text-brand-muted">
-              <MapPin className="w-3 h-3 text-brand-gold" />
-              Suite 2400, Zapposport Financial Centre, 100 Wall St, New York, NY 10005
-            </span>
+            {platformSettings.support_email && (
+              <a href={`mailto:${platformSettings.support_email}`} className="flex items-center gap-1.5 text-[11px] font-sans text-brand-muted hover:text-brand-gold transition-colors">
+                <Mail className="w-3 h-3 text-brand-gold" />
+                {platformSettings.support_email}
+              </a>
+            )}
           </div>
           <div className="flex items-center gap-4">
-            <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Linkedin className="w-3.5 h-3.5" /></a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Twitter className="w-3.5 h-3.5" /></a>
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Facebook className="w-3.5 h-3.5" /></a>
+            {platformSettings.social_linkedin && (
+              <a href={platformSettings.social_linkedin} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Linkedin className="w-3.5 h-3.5" /></a>
+            )}
+            {platformSettings.social_twitter && (
+              <a href={platformSettings.social_twitter} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Twitter className="w-3.5 h-3.5" /></a>
+            )}
+            {platformSettings.social_facebook && (
+              <a href={platformSettings.social_facebook} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Facebook className="w-3.5 h-3.5" /></a>
+            )}
+            {platformSettings.social_instagram && (
+              <a href={platformSettings.social_instagram} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Instagram className="w-3.5 h-3.5" /></a>
+            )}
           </div>
         </div>
       </div>

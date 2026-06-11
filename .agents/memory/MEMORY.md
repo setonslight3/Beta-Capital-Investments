@@ -1,0 +1,1 @@
+- [AlphaVest project](alphavest-project.md) — Serverless-Finance/ monorepo; Netlify/Neon deployment; API on port 8080, frontend on port 3000.

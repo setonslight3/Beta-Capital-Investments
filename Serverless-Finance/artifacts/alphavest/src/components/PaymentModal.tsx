@@ -25,8 +25,17 @@ const NETWORK_MAP: Record<CryptoNetwork, keyof CryptoAddresses> = {
   'SOL': 'sol',
 };
 
+const ALL_TABS: { id: Tab; label: string; icon: React.ReactNode; settingKey: string }[] = [
+  { id: 'paystack', label: 'Paystack', icon: <CreditCard className="w-3.5 h-3.5" />, settingKey: 'gateway_paystack_enabled' },
+  { id: 'flutterwave', label: 'Flutterwave', icon: <CreditCard className="w-3.5 h-3.5" />, settingKey: 'gateway_flutterwave_enabled' },
+  { id: 'monnify', label: 'Monnify', icon: <Building2 className="w-3.5 h-3.5" />, settingKey: 'gateway_monnify_enabled' },
+  { id: 'crypto', label: 'Crypto', icon: <Bitcoin className="w-3.5 h-3.5" />, settingKey: 'gateway_crypto_enabled' },
+];
+
 export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) {
-  const [tab, setTab] = useState<Tab>('paystack');
+  const [gatewaySettings, setGatewaySettings] = useState<Record<string, string>>({});
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [tab, setTab] = useState<Tab | null>(null);
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -37,9 +46,24 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
   const [cryptoSubmitted, setCryptoSubmitted] = useState(false);
 
   useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(d => {
+        setGatewaySettings(d ?? {});
+        setSettingsLoaded(true);
+      })
+      .catch(() => setSettingsLoaded(true));
     fetch('/api/payments/crypto/addresses', { credentials: 'include' })
       .then(r => r.json()).then(setCryptoAddresses).catch(() => {});
   }, []);
+
+  const enabledTabs = ALL_TABS.filter(t => gatewaySettings[t.settingKey] !== 'false');
+
+  useEffect(() => {
+    if (settingsLoaded && enabledTabs.length > 0 && tab === null) {
+      setTab(enabledTabs[0].id);
+    }
+  }, [settingsLoaded, enabledTabs.length]);
 
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -100,12 +124,28 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
 
   const currentAddress = cryptoAddresses[NETWORK_MAP[cryptoNetwork]];
 
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'paystack', label: 'Paystack', icon: <CreditCard className="w-3.5 h-3.5" /> },
-    { id: 'flutterwave', label: 'Flutterwave', icon: <CreditCard className="w-3.5 h-3.5" /> },
-    { id: 'monnify', label: 'Monnify', icon: <Building2 className="w-3.5 h-3.5" /> },
-    { id: 'crypto', label: 'Crypto', icon: <Bitcoin className="w-3.5 h-3.5" /> },
-  ];
+  if (!settingsLoaded) {
+    return (
+      <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+        <div className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-md shadow-2xl p-8 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-brand-gold" />
+        </div>
+      </div>
+    );
+  }
+
+  if (enabledTabs.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-md shadow-2xl p-8 text-center" onClick={e => e.stopPropagation()}>
+          <AlertCircle className="w-10 h-10 text-yellow-400 mx-auto mb-3" />
+          <p className="text-brand-text font-serif font-bold text-lg mb-2">No Payment Methods Available</p>
+          <p className="text-brand-muted font-sans text-sm mb-5">All payment gateways are currently disabled. Please contact support.</p>
+          <button onClick={onClose} className="bg-brand-gold text-brand-bg font-sans font-bold text-xs px-6 py-2.5 rounded uppercase tracking-widest hover:brightness-110 transition-all">Close</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -124,9 +164,9 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
           </button>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs — only enabled gateways */}
         <div className="flex gap-1 p-3 border-b border-brand-border bg-brand-bg/40">
-          {tabs.map(t => (
+          {enabledTabs.map(t => (
             <button
               key={t.id}
               onClick={() => { setTab(t.id); setError(''); }}
@@ -151,7 +191,7 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
           )}
 
           {/* Paystack / Flutterwave / Monnify tabs */}
-          {(tab === 'paystack' || tab === 'flutterwave' || tab === 'monnify') && (
+          {tab && (tab === 'paystack' || tab === 'flutterwave' || tab === 'monnify') && (
             <form onSubmit={(e) => { e.preventDefault(); initGateway(tab); }} className="space-y-4">
               <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-3 text-xs font-sans text-brand-muted leading-relaxed">
                 {tab === 'paystack' && '✓ Card, bank transfer, USSD via Paystack — USD & NGN accepted'}
@@ -196,7 +236,6 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                 </div>
               ) : (
                 <form onSubmit={handleCryptoSubmit} className="space-y-4">
-                  {/* Network selector */}
                   <div>
                     <label className="block text-brand-muted font-sans text-xs mb-1.5">Select Network</label>
                     <div className="grid grid-cols-3 gap-1.5">
@@ -217,7 +256,6 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                     </div>
                   </div>
 
-                  {/* Wallet address */}
                   {currentAddress ? (
                     <div>
                       <label className="block text-brand-muted font-sans text-xs mb-1.5">Send {cryptoNetwork} to this address</label>
@@ -238,7 +276,6 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                     </div>
                   )}
 
-                  {/* Amount */}
                   <div>
                     <label className="block text-brand-muted font-sans text-xs mb-1.5">Amount in USD equivalent</label>
                     <div className="relative">
@@ -251,7 +288,6 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                     </div>
                   </div>
 
-                  {/* TX Hash */}
                   <div>
                     <label className="block text-brand-muted font-sans text-xs mb-1.5">Transaction Hash (after sending)</label>
                     <input

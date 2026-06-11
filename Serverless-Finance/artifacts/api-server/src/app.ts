@@ -3,6 +3,8 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import { pool } from "@workspace/db";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -10,6 +12,13 @@ import { logger } from "./lib/logger";
 const app: Express = express();
 
 const isProd = process.env.NODE_ENV === "production";
+
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  }),
+);
 
 app.use(
   pinoHttp({
@@ -53,8 +62,25 @@ app.use(
 
 app.set("trust proxy", 1);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many requests, please try again later." },
+  skip: (req) => req.path === "/api/healthz",
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Too many authentication attempts. Try again in 15 minutes." },
+});
 
 const PgStore = connectPgSimple(session);
 
@@ -67,7 +93,7 @@ app.use(
       ? new PgStore({
           pool,
           tableName: "user_sessions",
-          createTableIfMissing: false,
+          createTableIfMissing: true,
         })
       : undefined,
     cookie: {
@@ -79,6 +105,8 @@ app.use(
   }),
 );
 
+app.use("/api/auth", authLimiter);
+app.use("/api", apiLimiter);
 app.use("/api", router);
 
 export default app;

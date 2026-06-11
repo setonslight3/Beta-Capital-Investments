@@ -44,7 +44,8 @@ router.post("/auth/biometric/register-options", async (req: Request, res: Respon
     })),
     authenticatorSelection: {
       residentKey: "preferred",
-      userVerification: "preferred",
+      userVerification: "discouraged",
+      authenticatorAttachment: "platform",
     },
   });
 
@@ -124,7 +125,7 @@ router.post("/auth/biometric/login-options", async (req: Request, res: Response)
       type: "public-key" as const,
       transports: [] as AuthenticatorTransportFuture[],
     })),
-    userVerification: "preferred",
+    userVerification: "discouraged",
   });
 
   req.session.webauthnChallenge = options.challenge;

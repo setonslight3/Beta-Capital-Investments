@@ -791,6 +791,109 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                   </div>
                 </div>
 
+                {/* Withdrawal Method Toggles */}
+                <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
+                  <h3 className="text-xs font-bold text-brand-text mb-1 uppercase tracking-wider">Withdrawal Methods</h3>
+                  <p className="text-[10px] text-brand-muted font-sans mb-4">Control which withdrawal methods users can access.</p>
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { key: 'withdraw_bank_enabled', label: 'Bank Transfer' },
+                      { key: 'withdraw_paystack_enabled', label: 'Paystack' },
+                      { key: 'withdraw_crypto_enabled', label: 'Crypto' },
+                    ].map(f => (
+                      <div key={f.key}>
+                        <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>
+                        <select className={inputCls} value={settings[f.key] ?? 'true'} onChange={e => setSettings(p => ({ ...p, [f.key]: e.target.value }))}>
+                          <option value="true">Enabled</option>
+                          <option value="false">Disabled</option>
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tier ROI Rates */}
+                <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
+                  <h3 className="text-xs font-bold text-brand-text mb-1 uppercase tracking-wider">Tier ROI Rates (Weekly %)</h3>
+                  <p className="text-[10px] text-brand-muted font-sans mb-4">Set the weekly return on investment for each tier. Changing these will notify all users. Enter as a number (e.g. 5.0 for 5%).</p>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {[
+                      { key: 'tier_roi_bronze', label: 'Bronze Ore' },
+                      { key: 'tier_roi_silver', label: 'Silver Ore' },
+                      { key: 'tier_roi_gold', label: 'Gold Ore' },
+                      { key: 'tier_roi_platinum', label: 'Platinum Ore' },
+                      { key: 'tier_roi_diamond', label: 'Diamond Ore' },
+                    ].map(f => (
+                      <div key={f.key}>
+                        <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>
+                        <div className="relative">
+                          <input type="number" step="0.1" min="0" max="100" className={inputCls} value={settings[f.key] ?? ''} onChange={e => setSettings(p => ({ ...p, [f.key]: e.target.value }))} />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-brand-muted font-sans">%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tier Minimum Investment */}
+                <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
+                  <h3 className="text-xs font-bold text-brand-text mb-1 uppercase tracking-wider">Tier Minimum Investment ($)</h3>
+                  <p className="text-[10px] text-brand-muted font-sans mb-4">Set the minimum investment amount required to qualify for each tier.</p>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {[
+                      { key: 'tier_min_bronze', label: 'Bronze Ore' },
+                      { key: 'tier_min_silver', label: 'Silver Ore' },
+                      { key: 'tier_min_gold', label: 'Gold Ore' },
+                      { key: 'tier_min_platinum', label: 'Platinum Ore' },
+                      { key: 'tier_min_diamond', label: 'Diamond Ore' },
+                    ].map(f => (
+                      <div key={f.key}>
+                        <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>
+                        <div className="relative">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-brand-gold font-sans">$</span>
+                          <input type="number" min="0" className={`${inputCls} pl-5`} value={settings[f.key] ?? ''} onChange={e => setSettings(p => ({ ...p, [f.key]: e.target.value }))} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Social Media & Branding */}
+                <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
+                  <h3 className="text-xs font-bold text-brand-text mb-1 uppercase tracking-wider">Social Media Links</h3>
+                  <p className="text-[10px] text-brand-muted font-sans mb-4">Configure public-facing social links shown on the landing page. Leave blank to hide.</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { key: 'social_linkedin', label: 'LinkedIn URL' },
+                      { key: 'social_twitter', label: 'Twitter / X URL' },
+                      { key: 'social_facebook', label: 'Facebook URL' },
+                      { key: 'social_instagram', label: 'Instagram URL' },
+                    ].map(f => (
+                      <div key={f.key}>
+                        <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>
+                        <input type="url" className={inputCls} value={settings[f.key] ?? ''} onChange={e => setSettings(p => ({ ...p, [f.key]: e.target.value }))} placeholder="https://..." />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Domain & Origin */}
+                <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
+                  <h3 className="text-xs font-bold text-brand-text mb-1 uppercase tracking-wider">Domain & WebAuthn Config</h3>
+                  <p className="text-[10px] text-brand-muted font-sans mb-4">Required for biometric (fingerprint) login to work correctly. Should match your Netlify domain.</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { key: 'app_domain', label: 'App Domain (e.g. alphavest.space)', placeholder: 'alphavest.space' },
+                      { key: 'app_origin', label: 'App Origin (e.g. https://alphavest.space)', placeholder: 'https://alphavest.space' },
+                    ].map(f => (
+                      <div key={f.key}>
+                        <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>
+                        <input className={inputCls} value={settings[f.key] ?? ''} onChange={e => setSettings(p => ({ ...p, [f.key]: e.target.value }))} placeholder={f.placeholder} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <button type="submit" className="flex items-center gap-2 bg-brand-gold text-brand-bg font-sans font-bold text-xs px-6 py-2.5 rounded hover:brightness-110 transition-all">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Save All Settings
                 </button>

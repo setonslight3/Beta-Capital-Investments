@@ -87,7 +87,7 @@ export function withdrawalEmailHtml(name: string, amount: string, method: string
           <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;">Hi ${name},</p>
           <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;">Your withdrawal request of <strong style="color:#e8dcc8;">${amount}</strong> via <strong style="color:#e8dcc8;">${method}</strong> has been <strong style="color:${color};">${statusLabel.toLowerCase()}</strong>.</p>
           ${note ? `<p style="color:#8a9ab5;font-family:sans-serif;font-size:13px;background:#0d1419;padding:12px;border-radius:4px;">Note: ${note}</p>` : ""}
-          <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">Contact support@alphavest.com for questions.</p>
+          <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">Contact support@alphavest.space for questions.</p>
         </td></tr>
       </table>
     </td></tr>

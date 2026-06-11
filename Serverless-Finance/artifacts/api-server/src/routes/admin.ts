@@ -21,19 +21,75 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   allow_new_investments: "true",
   max_withdrawal_daily: "50000",
   platform_name: "AlphaVest",
-  support_email: "support@alphavest.com",
+  support_email: "support@alphavest.space",
   // Gateway toggles
   gateway_monnify_enabled: "true",
   gateway_paystack_enabled: "true",
   gateway_flutterwave_enabled: "true",
   gateway_crypto_enabled: "true",
+  // Withdrawal method toggles
+  withdraw_bank_enabled: "true",
+  withdraw_paystack_enabled: "true",
+  withdraw_crypto_enabled: "true",
   // Crypto wallet addresses (set by admin, override env)
   crypto_btc_address: "",
   crypto_usdt_trc20_address: "",
   crypto_usdt_erc20_address: "",
   crypto_eth_address: "",
   crypto_sol_address: "",
+  // Tier ROI rates (weekly %)
+  tier_roi_bronze: "2.0",
+  tier_roi_silver: "3.5",
+  tier_roi_gold: "5.0",
+  tier_roi_platinum: "7.0",
+  tier_roi_diamond: "10.0",
+  // Tier minimum investment amounts ($)
+  tier_min_bronze: "500",
+  tier_min_silver: "5000",
+  tier_min_gold: "25000",
+  tier_min_platinum: "100000",
+  tier_min_diamond: "500000",
+  // Social media links
+  social_linkedin: "",
+  social_twitter: "",
+  social_facebook: "",
+  social_instagram: "",
+  // Domain / branding
+  app_domain: "",
+  app_origin: "",
 };
+
+// Keys that trigger broadcast notifications on change
+const NOTIFY_ON_CHANGE: Record<string, (oldVal: string, newVal: string) => { title: string; message: string } | null> = {
+  tier_roi_bronze: (_o, n) => ({ title: "Bronze Ore ROI Updated", message: `The weekly ROI for Bronze Ore tier has been updated to ${n}%.` }),
+  tier_roi_silver: (_o, n) => ({ title: "Silver Ore ROI Updated", message: `The weekly ROI for Silver Ore tier has been updated to ${n}%.` }),
+  tier_roi_gold: (_o, n) => ({ title: "Gold Ore ROI Updated", message: `The weekly ROI for Gold Ore tier has been updated to ${n}%.` }),
+  tier_roi_platinum: (_o, n) => ({ title: "Platinum Ore ROI Updated", message: `The weekly ROI for Platinum Ore tier has been updated to ${n}%.` }),
+  tier_roi_diamond: (_o, n) => ({ title: "Diamond Ore ROI Updated", message: `The weekly ROI for Diamond Ore tier has been updated to ${n}%.` }),
+  early_exit_penalty: (_o, n) => {
+    const pct = Math.round(parseFloat(n) * 100);
+    return { title: "Early Exit Policy Update", message: `The early withdrawal penalty has been updated to ${pct}%. Please review your investment terms.` };
+  },
+};
+
+// ─── PUBLIC SETTINGS (no auth) ─────────────────────────────────────────────────
+
+const SAFE_KEYS = new Set([
+  "gateway_monnify_enabled", "gateway_paystack_enabled",
+  "gateway_flutterwave_enabled", "gateway_crypto_enabled",
+  "withdraw_bank_enabled", "withdraw_paystack_enabled", "withdraw_crypto_enabled",
+  "support_email", "social_linkedin", "social_twitter", "social_facebook", "social_instagram",
+  "platform_name", "maintenance_mode", "allow_new_signups",
+]);
+
+router.get("/settings", async (_req: Request, res: Response) => {
+  const rows = await db.select().from(platformSettingsTable);
+  const all: Record<string, string> = { ...DEFAULT_SETTINGS };
+  for (const row of rows) all[row.key] = row.value;
+  const pub: Record<string, string> = {};
+  for (const key of SAFE_KEYS) pub[key] = all[key] ?? "";
+  res.json(pub);
+});
 
 // ─── METRICS ───────────────────────────────────────────────────────────────────
 
@@ -229,6 +285,7 @@ router.patch("/admin/payments/:id", requireAdmin, async (req: Request, res: Resp
     }
   }
 
+  void adminNote;
   res.json(updated);
 });
 
@@ -272,13 +329,11 @@ router.patch("/admin/withdrawals/:id", requireAdmin, async (req: Request, res: R
     processedAt: ["approved", "rejected"].includes(status) ? new Date() : wd.processedAt,
   }).where(eq(withdrawalRequestsTable.id, id)).returning();
 
-  // If rejected, refund the user
   if (status === "rejected" && wd.status === "pending") {
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, wd.userId)).limit(1);
     if (user) {
       await db.update(usersTable).set({ liquidity: user.liquidity + wd.amount }).where(eq(usersTable.id, wd.userId));
 
-      // Reverse the transaction
       const txId = `tx_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       await db.insert(transactionsTable).values({
         id: txId, userId: wd.userId, type: "Withdrawal Reversal", fund: "Refunded — Request Rejected",
@@ -294,7 +349,6 @@ router.patch("/admin/withdrawals/:id", requireAdmin, async (req: Request, res: R
         read: false, type: "alert",
       });
 
-      // Send email
       sendEmail(user.email, "Withdrawal Request Rejected — AlphaVest",
         withdrawalEmailHtml(user.fullName, fmt(wd.amount), wd.method, "rejected", adminNote)).catch(() => {});
     }
@@ -343,7 +397,6 @@ router.get("/admin/kyc/:id/file", requireAdmin, async (req: Request, res: Respon
   const id = Number(req.params.id);
   const [doc] = await db.select().from(kycDocumentsTable).where(eq(kycDocumentsTable.id, id)).limit(1);
   if (!doc) { res.status(404).json({ message: "Document not found" }); return; }
-  // Return base64 data as a downloadable response
   const buffer = Buffer.from(doc.fileDataBase64, "base64");
   res.setHeader("Content-Type", doc.mimeType);
   res.setHeader("Content-Disposition", `attachment; filename="${doc.fileName}"`);
@@ -361,7 +414,6 @@ router.patch("/admin/kyc/:id", requireAdmin, async (req: Request, res: Response)
 
   if (!doc) { res.status(404).json({ message: "Document not found" }); return; }
 
-  // Update user email verified if approved
   if (status === "approved") {
     await db.update(usersTable).set({ emailVerified: true }).where(eq(usersTable.id, doc.userId));
   }
@@ -395,12 +447,41 @@ router.get("/admin/settings", requireAdmin, async (_req: Request, res: Response)
 
 router.patch("/admin/settings", requireAdmin, async (req: Request, res: Response) => {
   const updates = req.body as Record<string, string>;
+
+  // Gather current values for broadcast comparison
+  const currentRows = await db.select().from(platformSettingsTable);
+  const current: Record<string, string> = { ...DEFAULT_SETTINGS };
+  for (const row of currentRows) current[row.key] = row.value;
+
   for (const [key, value] of Object.entries(updates)) {
     await db
       .insert(platformSettingsTable)
       .values({ key, value, updatedAt: new Date() })
       .onConflictDoUpdate({ target: platformSettingsTable.key, set: { value, updatedAt: new Date() } });
   }
+
+  // Broadcast notifications for sensitive setting changes
+  const timestamp = new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  for (const [key, newValue] of Object.entries(updates)) {
+    const oldValue = current[key] ?? "";
+    if (newValue !== oldValue && NOTIFY_ON_CHANGE[key]) {
+      const notifDef = NOTIFY_ON_CHANGE[key](oldValue, newValue);
+      if (notifDef) {
+        const users = await db.select({ id: usersTable.id }).from(usersTable);
+        const values = users.map((u) => ({
+          id: `notif_${Date.now()}_${u.id}_${Math.random().toString(36).slice(2)}`,
+          userId: u.id,
+          title: notifDef.title,
+          message: notifDef.message,
+          timestamp,
+          read: false,
+          type: "info" as const,
+        }));
+        if (values.length > 0) await db.insert(notificationsTable).values(values);
+      }
+    }
+  }
+
   res.json({ message: "Settings updated" });
 });
 

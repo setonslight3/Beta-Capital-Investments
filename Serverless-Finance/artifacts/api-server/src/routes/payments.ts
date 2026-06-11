@@ -80,7 +80,7 @@ router.post("/payments/monnify/initialize", async (req: Request, res: Response) 
         customerName: user.fullName,
         customerEmail: user.email,
         paymentReference: reference,
-        paymentDescription: "AlphaVest Deposit",
+        paymentDescription: "BetterCapitalInvestment Deposit",
         currencyCode: "NGN",
         contractCode: process.env.MONNIFY_CONTRACT_CODE,
         redirectUrl: `${process.env.FRONTEND_URL ?? ""}?deposit=success`,
@@ -235,7 +235,7 @@ router.post("/payments/flutterwave/initialize", async (req: Request, res: Respon
         redirect_url: `${process.env.FRONTEND_URL ?? ""}?deposit=success`,
         customer: { email: user.email, name: user.fullName },
         customizations: {
-          title: "AlphaVest Deposit",
+          title: "BetterCapitalInvestment Deposit",
           description: "Fund your investment account",
         },
       },
@@ -424,7 +424,7 @@ router.get("/payments/history", async (req: Request, res: Response) => {
 // ─── MARKET DATA PROXY ────────────────────────────────────────────────────────
 
 const COIN_IDS = "bitcoin,ethereum,solana,binancecoin,ripple,tether,cardano,dogecoin,matic-network,litecoin";
-const COINGECKO_HEADERS = { Accept: "application/json", "User-Agent": "AlphaVest/1.0" };
+const COINGECKO_HEADERS = { Accept: "application/json", "User-Agent": "BetterCapitalInvestment/1.0" };
 
 // Simple in-memory cache to avoid hammering free APIs
 const cache: Map<string, { data: unknown; ts: number }> = new Map();
@@ -512,7 +512,7 @@ router.get("/market/chart/:coinId", async (req: Request, res: Response) => {
     const url = `https://api.exchange.coinbase.com/products/${product}/candles?granularity=${granularity}&start=${start}&end=${end}`;
     const resp = await axios.get(url, {
       timeout: 12000,
-      headers: { "User-Agent": "AlphaVest/1.0", Accept: "application/json" },
+      headers: { "User-Agent": "BetterCapitalInvestment/1.0", Accept: "application/json" },
     });
     // Coinbase candles: [[timestamp_sec, low, high, open, close, volume], ...]
     // Returned newest-first → reverse to get oldest-first

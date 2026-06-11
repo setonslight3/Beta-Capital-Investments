@@ -86,7 +86,7 @@ const PgStore = connectPgSimple(session);
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET ?? "alphavest-fallback-secret",
+    secret: process.env.SESSION_SECRET ?? "BetterCapitalInvestment-fallback-secret",
     resave: false,
     saveUninitialized: false,
     store: isProd

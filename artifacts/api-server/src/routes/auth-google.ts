@@ -87,7 +87,7 @@ router.get("/auth/google/callback", async (req: Request, res: Response) => {
         .values({
           id: notifId,
           userId: user.id,
-          title: "Welcome to AlphaVest",
+          title: "Welcome to BetterCapitalInvestment",
           message: "Your account has been created via Google. Deposit funds to start investing.",
           timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
           read: false,

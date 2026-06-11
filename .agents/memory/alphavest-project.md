@@ -1,6 +1,6 @@
 ---
-name: AlphaVest project
-description: Key decisions and gotchas for the AlphaVest investment platform in Serverless-Finance/.
+name: BetterCapitalInvestment project
+description: Key decisions and gotchas for the BetterCapitalInvestment investment platform in Serverless-Finance/.
 ---
 
 ## Location
@@ -51,7 +51,7 @@ PWA install prompt only triggers on HTTPS (Netlify), not on Replit dev server.
 ## CookieConsent
 Has Reject All, Manage (per-category toggles), and Accept All options.
 Categories: Essential (required), Preferences, Analytics.
-State stored in localStorage: alphavest_cookie_consent + alphavest_cookie_prefs.
+State stored in localStorage: BetterCapitalInvestment_cookie_consent + BetterCapitalInvestment_cookie_prefs.
 
 ## Tawk.to
 Property ID: 6a2abea9135ef41c3064d7ee, Widget ID: 1jqrfhhj9

@@ -12,7 +12,7 @@ import { eq } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-const RP_NAME = "AlphaVest";
+const RP_NAME = "BetterCapitalInvestment";
 const RP_ID = process.env.APP_DOMAIN ?? "localhost";
 const ORIGIN = process.env.APP_ORIGIN ?? (RP_ID === "localhost" ? "http://localhost:80" : `https://${RP_ID}`);
 

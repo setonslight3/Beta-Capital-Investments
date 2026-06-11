@@ -20,8 +20,8 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   allow_new_signups: "true",
   allow_new_investments: "true",
   max_withdrawal_daily: "50000",
-  platform_name: "AlphaVest",
-  support_email: "support@alphavest.space",
+  platform_name: "BetterCapitalInvestment",
+  support_email: "support@BetterCapitalInvestment.space",
   // Gateway toggles
   gateway_monnify_enabled: "true",
   gateway_paystack_enabled: "true",
@@ -358,7 +358,7 @@ router.patch("/admin/withdrawals/:id", requireAdmin, async (req: Request, res: R
         read: false, type: "alert",
       });
 
-      sendEmail(user.email, "Withdrawal Request Rejected — AlphaVest",
+      sendEmail(user.email, "Withdrawal Request Rejected — BetterCapitalInvestment",
         withdrawalEmailHtml(user.fullName, fmt(wd.amount), wd.method, "rejected", adminNote)).catch(() => {});
     }
   }
@@ -373,7 +373,7 @@ router.patch("/admin/withdrawals/:id", requireAdmin, async (req: Request, res: R
         timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
         read: false, type: "success",
       });
-      sendEmail(user.email, "Withdrawal Approved — AlphaVest",
+      sendEmail(user.email, "Withdrawal Approved — BetterCapitalInvestment",
         withdrawalEmailHtml(user.fullName, fmt(wd.amount), wd.method, "approved", adminNote)).catch(() => {});
     }
   }

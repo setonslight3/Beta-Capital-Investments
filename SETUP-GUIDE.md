@@ -1,6 +1,6 @@
-# AlphaVest — Complete Setup Guide
+# BetterCapitalInvestment — Complete Setup Guide
 
-This guide covers deploying AlphaVest on Netlify with a Neon PostgreSQL database.
+This guide covers deploying BetterCapitalInvestment on Netlify with a Neon PostgreSQL database.
 
 ---
 
@@ -24,17 +24,17 @@ Create a `.env` file in `artifacts/api-server/` (never commit this). All variabl
 
 | Variable | Description | Example |
 |---|---|---|
-| ⭐ `DATABASE_URL` | Neon PostgreSQL connection string | `postgresql://user:pass@ep-xxx.neon.tech/alphavest?sslmode=require` |
+| ⭐ `DATABASE_URL` | Neon PostgreSQL connection string | `postgresql://user:pass@ep-xxx.neon.tech/BetterCapitalInvestment?sslmode=require` |
 | ⭐ `SESSION_SECRET` | Random string (min 32 chars) for session signing | `openssl rand -hex 32` |
 | `NODE_ENV` | Set to `production` on Netlify | `production` |
-| `FRONTEND_URL` | Your Netlify domain (comma-separated for multiple) | `https://alphavest.space` |
+| `FRONTEND_URL` | Your Netlify domain (comma-separated for multiple) | `https://BetterCapitalInvestment.space` |
 
 ### App Domain (for Biometric/WebAuthn Login)
 
 | Variable | Description | Example |
 |---|---|---|
-| `APP_DOMAIN` | Bare domain (no https://) | `alphavest.space` |
-| `APP_ORIGIN` | Full origin URL | `https://alphavest.space` |
+| `APP_DOMAIN` | Bare domain (no https://) | `BetterCapitalInvestment.space` |
+| `APP_ORIGIN` | Full origin URL | `https://BetterCapitalInvestment.space` |
 
 > ⚠️ **Biometric login will only work if APP_DOMAIN and APP_ORIGIN exactly match your Netlify domain.** If they don't match, fingerprint/face-ID login will fail with "verification failed". Set them from Admin → Settings → Domain & WebAuthn Config after first deploy.
 
@@ -58,9 +58,9 @@ Create a `.env` file in `artifacts/api-server/` (never commit this). All variabl
 |---|---|---|
 | `SMTP_HOST` | SMTP host | `smtp.gmail.com` |
 | `SMTP_PORT` | SMTP port | `587` |
-| `SMTP_USER` | SMTP username/email | `support@alphavest.space` |
+| `SMTP_USER` | SMTP username/email | `support@BetterCapitalInvestment.space` |
 | `SMTP_PASS` | SMTP password / App Password | Gmail App Password |
-| `SMTP_FROM` | From address in emails | `"AlphaVest" <support@alphavest.space>` |
+| `SMTP_FROM` | From address in emails | `"BetterCapitalInvestment" <support@BetterCapitalInvestment.space>` |
 
 ### Google OAuth (Optional)
 
@@ -68,7 +68,7 @@ Create a `.env` file in `artifacts/api-server/` (never commit this). All variabl
 |---|---|
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
-| `GOOGLE_REDIRECT_URI` | Must match Netlify URL | `https://alphavest.space/api/auth/google/callback` |
+| `GOOGLE_REDIRECT_URI` | Must match Netlify URL | `https://BetterCapitalInvestment.space/api/auth/google/callback` |
 
 ---
 
@@ -98,7 +98,7 @@ pnpm install
 pnpm --filter @workspace/api-server run dev
 
 # Terminal 2 — Frontend (port 3000)
-pnpm --filter @workspace/alphavest run dev
+pnpm --filter @workspace/BetterCapitalInvestment run dev
 ```
 
 Access the app at `http://localhost:3000`.
@@ -112,15 +112,15 @@ Access the app at `http://localhost:3000`.
 ```bash
 npm install -g netlify-cli
 netlify login
-netlify deploy --prod --dir=Serverless-Finance/artifacts/alphavest/dist
+netlify deploy --prod --dir=Serverless-Finance/artifacts/BetterCapitalInvestment/dist
 ```
 
 ### Method B: Netlify Dashboard
 
 1. Connect your GitHub repository.
 2. Set **Base directory**: `Serverless-Finance`
-3. Set **Build command**: `pnpm --filter @workspace/alphavest run build`
-4. Set **Publish directory**: `artifacts/alphavest/dist`
+3. Set **Build command**: `pnpm --filter @workspace/BetterCapitalInvestment run build`
+4. Set **Publish directory**: `artifacts/BetterCapitalInvestment/dist`
 5. Add all environment variables from §2 in **Site settings → Environment variables**.
 
 ### netlify.toml (already included)
@@ -137,7 +137,7 @@ The `netlify.toml` in `Serverless-Finance/` handles:
 
 After deploy, log in as admin and go to **Admin → Settings**:
 
-- [ ] Set **Support Email** to `support@alphavest.space`
+- [ ] Set **Support Email** to `support@BetterCapitalInvestment.space`
 - [ ] Set **App Domain** and **App Origin** (required for fingerprint login)
 - [ ] Set **Social Media Links** (LinkedIn, Twitter, Facebook, Instagram)
 - [ ] Toggle **Payment Gateways** (enable only those with configured API keys)
@@ -168,8 +168,8 @@ const TAWK_WIDGET_ID = "1jqrfhhj9";
 
 WebAuthn fingerprint login requires:
 1. **HTTPS** — works automatically on Netlify.
-2. **APP_DOMAIN** = bare domain (e.g. `alphavest.space`)
-3. **APP_ORIGIN** = full origin (e.g. `https://alphavest.space`)
+2. **APP_DOMAIN** = bare domain (e.g. `BetterCapitalInvestment.space`)
+3. **APP_ORIGIN** = full origin (e.g. `https://BetterCapitalInvestment.space`)
 
 On localhost, it uses `localhost` as the RP ID automatically.
 
@@ -276,5 +276,5 @@ Once deployed to Netlify, you get a static SPA served from CDN — there's no Vi
 | Payment gateway missing from modal | Gateway is disabled in Admin → Settings → Payment Gateways |
 | Withdrawal method not showing | Disabled in Admin → Settings → Withdrawal Methods |
 | No email notifications | Configure SMTP_HOST, SMTP_USER, SMTP_PASS, SMTP_FROM |
-| Site name still shows AlphaVest | Change it in Admin → Settings → Platform Branding → Platform Name |
+| Site name still shows BetterCapitalInvestment | Change it in Admin → Settings → Platform Branding → Platform Name |
 | PWA install prompt not showing | Browser requires HTTPS + manifest.json. Works on Netlify, not dev. |

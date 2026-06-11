@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "BetterCapitalInvestment"
+version = "1.0.0"
+id = "artifacts/BetterCapitalInvestment"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20464
+
+[services.development]
+run = "pnpm --filter @workspace/BetterCapitalInvestment run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/BetterCapitalInvestment", "run", "build" ]
+publicDir = "artifacts/BetterCapitalInvestment/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20464"
+BASE_PATH = "/"

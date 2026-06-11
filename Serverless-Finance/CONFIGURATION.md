@@ -1,6 +1,6 @@
-# AlphaVest — Configuration & Deployment Guide
+# BetterCapitalInvestment — Configuration & Deployment Guide
 
-This document covers every environment variable, API key, redirect URL, and configuration step needed to deploy AlphaVest on Netlify.
+This document covers every environment variable, API key, redirect URL, and configuration step needed to deploy BetterCapitalInvestment on Netlify.
 
 ---
 
@@ -11,15 +11,15 @@ This document covers every environment variable, API key, redirect URL, and conf
 | Field | Value |
 |---|---|
 | Base directory | `.` (workspace root) |
-| Build command | `pnpm install && pnpm run typecheck:libs && pnpm --filter @workspace/alphavest run build` |
-| Publish directory | `artifacts/alphavest/dist/public` |
+| Build command | `pnpm install && pnpm run typecheck:libs && pnpm --filter @workspace/BetterCapitalInvestment run build` |
+| Publish directory | `artifacts/BetterCapitalInvestment/dist/public` |
 | Functions directory | `netlify/functions` |
 
 ### Architecture
 
 ```
 Browser → Netlify CDN → /api/* → Netlify Function (serverless Express)
-                      → /*    → Static React SPA (artifacts/alphavest/dist/public)
+                      → /*    → Static React SPA (artifacts/BetterCapitalInvestment/dist/public)
 ```
 
 The entire Express API server is wrapped in `netlify/functions/api.ts` using `serverless-http`. Sessions are stored in PostgreSQL so they survive across serverless invocations.
@@ -79,7 +79,7 @@ Set these in **Netlify → Site Settings → Environment Variables**.
 
 ## 4. Email OTPs (Resend)
 
-AlphaVest sends OTP codes for email verification and password reset using [Resend](https://resend.com).
+BetterCapitalInvestment sends OTP codes for email verification and password reset using [Resend](https://resend.com).
 
 ### Setup
 
@@ -92,7 +92,7 @@ AlphaVest sends OTP codes for email verification and password reset using [Resen
 | Variable | Description |
 |---|---|
 | `RESEND_API_KEY` | Your Resend API key (starts with `re_`) |
-| `EMAIL_FROM` | Sender address (must match your verified domain). Example: `AlphaVest <noreply@yourdomain.com>` |
+| `EMAIL_FROM` | Sender address (must match your verified domain). Example: `BetterCapitalInvestment <noreply@yourdomain.com>` |
 
 > **Without `RESEND_API_KEY`**: Email is logged to the server console instead of being sent. Users' emails are auto-verified on signup (useful for testing).
 
@@ -247,7 +247,7 @@ The app includes a tawk.to chat widget stub. To enable it:
 
 1. Create a free account at [tawk.to](https://tawk.to)
 2. Copy your Property ID from the integration snippet
-3. In `artifacts/alphavest/src/App.tsx`, replace `'YOUR_TAWK_PROPERTY_ID'` with your actual Property ID
+3. In `artifacts/BetterCapitalInvestment/src/App.tsx`, replace `'YOUR_TAWK_PROPERTY_ID'` with your actual Property ID
 
 ---
 
@@ -270,7 +270,7 @@ GOOGLE_CALLBACK_URL=https://YOUR-SITE.netlify.app/api/auth/google/callback
 
 # ── Email (Resend) ────────────────────────────────────────
 RESEND_API_KEY=re_...
-EMAIL_FROM=AlphaVest <noreply@yourdomain.com>
+EMAIL_FROM=BetterCapitalInvestment <noreply@yourdomain.com>
 
 # ── Payments: Monnify ─────────────────────────────────────
 MONNIFY_API_KEY=...

@@ -92,7 +92,7 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
   await db.insert(notificationsTable).values({
     id: notifId,
     userId: user.id,
-    title: "Welcome to AlphaVest",
+    title: "Welcome to BetterCapitalInvestment",
     message: "Your account has been created. Complete email verification then deposit funds to start building wealth.",
     timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
     read: false,

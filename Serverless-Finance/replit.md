@@ -1,4 +1,4 @@
-# AlphaVest
+# BetterCapitalInvestment
 
 Premium investment platform — accounts, investments, deposits (Monnify/Flutterwave/Paystack/crypto), withdrawals (bank/crypto), admin dashboard, Google OAuth, WebAuthn biometrics, email OTPs via Resend, KYC document upload.
 
@@ -26,8 +26,8 @@ Premium investment platform — accounts, investments, deposits (Monnify/Flutter
 
 ## Where things live
 
-- `artifacts/alphavest/src/` — React frontend (App.tsx, components/, types.ts, data.ts)
-- `artifacts/alphavest/src/components/` — All UI components (LandingView, DashboardView, AdminDashboard, PaymentModal, WithdrawModal, etc.)
+- `artifacts/BetterCapitalInvestment/src/` — React frontend (App.tsx, components/, types.ts, data.ts)
+- `artifacts/BetterCapitalInvestment/src/components/` — All UI components (LandingView, DashboardView, AdminDashboard, PaymentModal, WithdrawModal, etc.)
 - `artifacts/api-server/src/app.ts` — Express app setup (session, CORS, middleware)
 - `artifacts/api-server/src/routes/` — All API routes (auth, investments, payments, admin, etc.)
 - `artifacts/api-server/src/lib/` — Shared utilities (mailer, admin-middleware)

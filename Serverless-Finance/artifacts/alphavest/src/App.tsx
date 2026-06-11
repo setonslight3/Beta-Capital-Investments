@@ -8,6 +8,8 @@ import OTPVerifyView from "./components/OTPVerifyView";
 import ForgotPasswordView from "./components/ForgotPasswordView";
 import AdminDashboard from "./components/AdminDashboard";
 import CookieConsent from "./components/CookieConsent";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import { PlatformProvider } from "./context/PlatformContext";
 import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
 
 const THEME_COOKIE = "alphavest_theme";
@@ -60,10 +62,39 @@ const DEFAULT_SESSION: UserSession = {
 // Apply saved theme immediately (before React renders) to avoid flash
 applyTheme(DEFAULT_SESSION.theme);
 
-// Inject tawk.to live chat widget
+// Inject tawk.to live chat widget with brand theming
 function injectTawkTo() {
   const TAWK_PROPERTY_ID = "6a2abea9135ef41c3064d7ee";
   const TAWK_WIDGET_ID = "1jqrfhhj9";
+
+  // Pre-configure Tawk API before script loads to apply brand theme
+  const w = window as unknown as Record<string, unknown>;
+  w.Tawk_LoadStart = new Date();
+  w.Tawk_API = w.Tawk_API ?? {};
+  const api = w.Tawk_API as Record<string, unknown>;
+  // Position & z-index config
+  api.customStyle = { zIndex: 9990 };
+  // Apply brand gold theme after widget loads
+  api.onLoad = function () {
+    const tawk = w.Tawk_API as {
+      setAttributes?: (attrs: Record<string, string>, cb: () => void) => void;
+      hideWidget?: () => void;
+      showWidget?: () => void;
+    };
+    try {
+      // Set custom styling via embedded CSS
+      const style = document.createElement("style");
+      style.textContent = `
+        .tawk-min-container .tawk-button-circle { background-color: #F2CA50 !important; }
+        .tawk-button-circle svg { fill: #0a0f14 !important; }
+        .tawk-badge { background-color: #F2CA50 !important; color: #0a0f14 !important; }
+        iframe[title="chat widget"] { filter: none !important; }
+      `;
+      document.head.appendChild(style);
+      tawk.setAttributes?.({ source: "alphavest" }, () => {});
+    } catch { /* */ }
+  };
+
   const s = document.createElement("script");
   s.type = "text/javascript";
   s.async = true;
@@ -83,7 +114,7 @@ type SignupUser = {
   emailVerified?: boolean;
 };
 
-export default function App() {
+function AppInner() {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>("landing");
   const [session, setSession] = useState<UserSession>(DEFAULT_SESSION);
   const [authChecked, setAuthChecked] = useState(false);
@@ -348,4 +379,13 @@ export default function App() {
         </>
       );
   }
+}
+
+export default function App() {
+  return (
+    <PlatformProvider>
+      <AppInner />
+      <PWAInstallPrompt variant="banner" />
+    </PlatformProvider>
+  );
 }

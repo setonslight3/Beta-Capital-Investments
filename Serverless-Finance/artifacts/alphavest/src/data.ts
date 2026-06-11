@@ -183,7 +183,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'How do I contact support?',
-    a: 'Support is available 24/7 via live chat (click the chat icon at the bottom-right), email at support@alphavest.com, or by phone at +1 (800) 425-8392. Average response time is under 2 hours.'
+    a: 'Support is available 24/7 via live chat (click the chat icon at the bottom-right) or by email. Average response time is under 2 hours.'
   },
 ];
 

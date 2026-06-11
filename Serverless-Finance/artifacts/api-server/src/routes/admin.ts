@@ -37,18 +37,24 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   crypto_usdt_erc20_address: "",
   crypto_eth_address: "",
   crypto_sol_address: "",
-  // Tier ROI rates (weekly %)
-  tier_roi_bronze: "2.0",
-  tier_roi_silver: "3.5",
-  tier_roi_gold: "5.0",
-  tier_roi_platinum: "7.0",
-  tier_roi_diamond: "10.0",
+  // Tier daily ROI rates (%)
+  tier_roi_bronze: "0.25",
+  tier_roi_silver: "0.35",
+  tier_roi_gold: "0.45",
+  tier_roi_platinum: "0.55",
+  tier_roi_diamond: "0.70",
   // Tier minimum investment amounts ($)
-  tier_min_bronze: "500",
-  tier_min_silver: "5000",
-  tier_min_gold: "25000",
-  tier_min_platinum: "100000",
-  tier_min_diamond: "500000",
+  tier_min_bronze: "3000",
+  tier_min_silver: "10000",
+  tier_min_gold: "50000",
+  tier_min_platinum: "250000",
+  tier_min_diamond: "1000000",
+  // Tier descriptions (configurable copy)
+  tier_desc_bronze: "Bronze level entry ore for establishing a strong, diversified interest stream.",
+  tier_desc_silver: "Silver level growth ore with enhanced daily yields for serious portfolios.",
+  tier_desc_gold: "Our standard gold asset for securing prime real estate and premium commodities.",
+  tier_desc_platinum: "Elite platinum tier backing large-scale global initiatives and customized liquidity accounts.",
+  tier_desc_diamond: "Supreme-tier backing designated for absolute sovereign wealth and maximal return flows.",
   // Social media links
   social_linkedin: "",
   social_twitter: "",
@@ -61,11 +67,11 @@ const DEFAULT_SETTINGS: Record<string, string> = {
 
 // Keys that trigger broadcast notifications on change
 const NOTIFY_ON_CHANGE: Record<string, (oldVal: string, newVal: string) => { title: string; message: string } | null> = {
-  tier_roi_bronze: (_o, n) => ({ title: "Bronze Ore ROI Updated", message: `The weekly ROI for Bronze Ore tier has been updated to ${n}%.` }),
-  tier_roi_silver: (_o, n) => ({ title: "Silver Ore ROI Updated", message: `The weekly ROI for Silver Ore tier has been updated to ${n}%.` }),
-  tier_roi_gold: (_o, n) => ({ title: "Gold Ore ROI Updated", message: `The weekly ROI for Gold Ore tier has been updated to ${n}%.` }),
-  tier_roi_platinum: (_o, n) => ({ title: "Platinum Ore ROI Updated", message: `The weekly ROI for Platinum Ore tier has been updated to ${n}%.` }),
-  tier_roi_diamond: (_o, n) => ({ title: "Diamond Ore ROI Updated", message: `The weekly ROI for Diamond Ore tier has been updated to ${n}%.` }),
+  tier_roi_bronze: (_o, n) => ({ title: "Bronze Ore ROI Updated", message: `The daily ROI for Bronze Ore tier has been updated to ${n}% per day.` }),
+  tier_roi_silver: (_o, n) => ({ title: "Silver Ore ROI Updated", message: `The daily ROI for Silver Ore tier has been updated to ${n}% per day.` }),
+  tier_roi_gold: (_o, n) => ({ title: "Gold Ore ROI Updated", message: `The daily ROI for Gold Ore tier has been updated to ${n}% per day.` }),
+  tier_roi_platinum: (_o, n) => ({ title: "Platinum Ore ROI Updated", message: `The daily ROI for Platinum Ore tier has been updated to ${n}% per day.` }),
+  tier_roi_diamond: (_o, n) => ({ title: "Diamond Ore ROI Updated", message: `The daily ROI for Diamond Ore tier has been updated to ${n}% per day.` }),
   early_exit_penalty: (_o, n) => {
     const pct = Math.round(parseFloat(n) * 100);
     return { title: "Early Exit Policy Update", message: `The early withdrawal penalty has been updated to ${pct}%. Please review your investment terms.` };
@@ -80,6 +86,9 @@ const SAFE_KEYS = new Set([
   "withdraw_bank_enabled", "withdraw_paystack_enabled", "withdraw_crypto_enabled",
   "support_email", "social_linkedin", "social_twitter", "social_facebook", "social_instagram",
   "platform_name", "maintenance_mode", "allow_new_signups",
+  "tier_desc_bronze", "tier_desc_silver", "tier_desc_gold", "tier_desc_platinum", "tier_desc_diamond",
+  "tier_roi_bronze", "tier_roi_silver", "tier_roi_gold", "tier_roi_platinum", "tier_roi_diamond",
+  "tier_min_bronze", "tier_min_silver", "tier_min_gold", "tier_min_platinum", "tier_min_diamond",
 ]);
 
 router.get("/settings", async (_req: Request, res: Response) => {

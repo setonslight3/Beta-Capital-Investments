@@ -182,15 +182,17 @@ On localhost, it uses `localhost` as the RP ID automatically.
 
 ## 9. Investment Tier System
 
-| Tier | Default Min ($) | Default Weekly ROI |
-|---|---|---|
-| Bronze Ore | $500 | 2.0% |
-| Silver Ore | $5,000 | 3.5% |
-| Gold Ore | $25,000 | 5.0% |
-| Platinum Ore | $100,000 | 7.0% |
-| Diamond Ore | $500,000 | 10.0% |
+ROI is **daily** — applied once per day over a 30-day term. Users cannot withdraw the investment principal until 30 days are complete, or they pay an early-exit penalty (configurable from admin).
 
-All tiers and ROI rates are configurable from **Admin → Settings → Tier ROI Rates**.
+| Tier | Default Min ($) | Default Daily ROI |
+|---|---|---|
+| Bronze Ore | $3,000 | 0.25% / day |
+| Silver Ore | $10,000 | 0.35% / day |
+| Gold Ore | $50,000 | 0.45% / day |
+| Platinum Ore | $250,000 | 0.55% / day |
+| Diamond Ore | $1,000,000 | 0.70% / day |
+
+All tiers, ROI rates, and descriptions are configurable from **Admin → Settings**.
 When you change a tier's ROI, all users automatically receive an in-app notification.
 
 ---
@@ -206,7 +208,63 @@ Built-in protections:
 
 ---
 
-## 11. Common Issues
+## 11. Cloudflare Protection
+
+Netlify manages your DNS via nameservers — Cloudflare's full proxy (orange cloud) **conflicts** with this setup. Here are the two options:
+
+### Option A: Cloudflare Turnstile CAPTCHA (Recommended — no DNS change)
+
+Turnstile is Cloudflare's free, privacy-preserving CAPTCHA that works without routing traffic through Cloudflare:
+
+1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Turnstile** → **Add Site**
+2. Enter your domain, choose "Managed" mode
+3. Copy your **Site Key** and **Secret Key**
+4. Add to your Netlify environment variables:
+   - `TURNSTILE_SITE_KEY` — used in the frontend
+   - `TURNSTILE_SECRET_KEY` — used in the API to verify tokens
+5. Embed in your signup/login forms with the Turnstile widget script
+
+This protects against bot signups and brute-force attacks without any DNS changes.
+
+### Option B: Full Cloudflare Proxy (WAF + DDoS) — requires DNS migration
+
+If you want Cloudflare's full CDN, WAF (Web Application Firewall), and DDoS mitigation:
+
+1. **Create a Cloudflare account** and add your domain
+2. **Change your domain nameservers** (at your registrar, e.g. GoDaddy/Namecheap) to point to Cloudflare's nameservers
+3. In Cloudflare DNS, set an **A record** for your domain pointing to `75.2.60.5` (Netlify's load balancer IP) with **proxy enabled** (orange cloud ☁️)
+4. In Netlify: Site Settings → Domain Management → confirm the domain still shows as connected
+5. Enable Cloudflare features:
+   - **WAF** (Web Application Firewall) → turn on OWASP Core Ruleset
+   - **Bot Fight Mode** → on
+   - **Under Attack Mode** (if actively being attacked) → Security → Settings
+   - **Rate Limiting** → create rules for `/api/auth/*` (5 req/min per IP)
+
+> ⚠️ After switching to Cloudflare nameservers, Netlify's automatic SSL certificate renewal still works — Netlify uses Let's Encrypt and Cloudflare will proxy HTTPS correctly.
+
+### Tawk.to Chat Widget Color
+
+The Tawk.to chat bubble color must be changed in their dashboard (the JS API cannot override it):
+1. Log in at [tawk.to](https://tawk.to)
+2. Go to **Administration → Chat Widget → Appearance**
+3. Set the **Theme Color** to `#F2CA50` (brand gold) and the **Text Color** to `#0a0f14` (dark background)
+4. Save — the widget bubble will now match the app's gold theme
+
+---
+
+## 12. Why Does the Preview Keep Reloading?
+
+**This only happens in Replit's development environment — not in production.**
+
+The preview pane reloads for two reasons:
+1. **Vite HMR (Hot Module Replacement)** — When you or the agent edits a file, Vite's dev server pushes a live update. This is intentional for fast development iteration.
+2. **WebSocket reconnects** — Replit's preview pane uses a proxied WebSocket to the dev server. When the container idles, the connection drops and the preview reconnects (you see "Polling for restart…" in the console).
+
+Once deployed to Netlify, you get a static SPA served from CDN — there's no Vite dev server, no WebSocket, no HMR. The site will be completely stable.
+
+---
+
+## 13. Common Issues
 
 | Problem | Solution |
 |---|---|
@@ -218,4 +276,5 @@ Built-in protections:
 | Payment gateway missing from modal | Gateway is disabled in Admin → Settings → Payment Gateways |
 | Withdrawal method not showing | Disabled in Admin → Settings → Withdrawal Methods |
 | No email notifications | Configure SMTP_HOST, SMTP_USER, SMTP_PASS, SMTP_FROM |
-| New signups set to Gold Ore | Fixed — new signups now default to Bronze Ore |
+| Site name still shows AlphaVest | Change it in Admin → Settings → Platform Branding → Platform Name |
+| PWA install prompt not showing | Browser requires HTTPS + manifest.json. Works on Netlify, not dev. |

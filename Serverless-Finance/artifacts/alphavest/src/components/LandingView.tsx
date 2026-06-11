@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { usePlatform } from '../context/PlatformContext';
 import {
   Shield, Eye, TrendingUp, ArrowRight, BookOpen, X, Palette, Globe2, ChevronDown,
   Mail, CheckCircle2, Star, Linkedin, Twitter, Facebook, Instagram,
@@ -83,26 +84,11 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
   const [selectedSector, setSelectedSector] = useState<typeof INVESTMENT_SECTORS[0] | null>(null);
   const [showComingSoonSector, setShowComingSoonSector] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [platformSettings, setPlatformSettings] = useState<Record<string, string>>({
-    support_email: 'support@alphavest.space',
-    social_linkedin: '',
-    social_twitter: '',
-    social_facebook: '',
-    social_instagram: '',
-  });
+  const platform = usePlatform();
   const sectorsRef = useRef<HTMLElement>(null);
   const plansRef = useRef<HTMLElement>(null);
 
   const tickers = useLivePrices();
-
-  useEffect(() => {
-    fetch('/api/settings')
-      .then(r => r.json())
-      .then(d => {
-        if (d && typeof d === 'object') setPlatformSettings(prev => ({ ...prev, ...d }));
-      })
-      .catch(() => {});
-  }, []);
 
   const handleScrollToSectors = () => sectorsRef.current?.scrollIntoView({ behavior: 'smooth' });
   const handleScrollToPlans = () => plansRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -114,25 +100,25 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
       <div className="bg-brand-surface border-b border-brand-border/60 hidden md:block">
         <div className="max-w-7xl mx-auto px-6 md:px-16 h-10 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            {platformSettings.support_email && (
-              <a href={`mailto:${platformSettings.support_email}`} className="flex items-center gap-1.5 text-[11px] font-sans text-brand-muted hover:text-brand-gold transition-colors">
+            {platform.supportEmail && (
+              <a href={`mailto:${platform.supportEmail}`} className="flex items-center gap-1.5 text-[11px] font-sans text-brand-muted hover:text-brand-gold transition-colors">
                 <Mail className="w-3 h-3 text-brand-gold" />
-                {platformSettings.support_email}
+                {platform.supportEmail}
               </a>
             )}
           </div>
           <div className="flex items-center gap-4">
-            {platformSettings.social_linkedin && (
-              <a href={platformSettings.social_linkedin} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Linkedin className="w-3.5 h-3.5" /></a>
+            {platform.socialLinkedin && (
+              <a href={platform.socialLinkedin} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Linkedin className="w-3.5 h-3.5" /></a>
             )}
-            {platformSettings.social_twitter && (
-              <a href={platformSettings.social_twitter} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Twitter className="w-3.5 h-3.5" /></a>
+            {platform.socialTwitter && (
+              <a href={platform.socialTwitter} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Twitter className="w-3.5 h-3.5" /></a>
             )}
-            {platformSettings.social_facebook && (
-              <a href={platformSettings.social_facebook} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Facebook className="w-3.5 h-3.5" /></a>
+            {platform.socialFacebook && (
+              <a href={platform.socialFacebook} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Facebook className="w-3.5 h-3.5" /></a>
             )}
-            {platformSettings.social_instagram && (
-              <a href={platformSettings.social_instagram} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Instagram className="w-3.5 h-3.5" /></a>
+            {platform.socialInstagram && (
+              <a href={platform.socialInstagram} target="_blank" rel="noreferrer" className="text-brand-muted hover:text-brand-gold transition-colors"><Instagram className="w-3.5 h-3.5" /></a>
             )}
           </div>
         </div>
@@ -497,9 +483,9 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <LogoIcon size={28} />
-              <span className="font-serif text-base font-bold text-brand-gold tracking-wider uppercase">AlphaVest</span>
+              <span className="font-serif text-base font-bold text-brand-gold tracking-wider uppercase">{platform.platformName}</span>
             </div>
-            <p className="text-brand-muted text-sm font-sans leading-relaxed max-w-sm">Professional investment management for discerning investors. AlphaVest is committed to delivering consistent, risk-adjusted returns through disciplined portfolio management.</p>
+            <p className="text-brand-muted text-sm font-sans leading-relaxed max-w-sm">Professional investment management for discerning investors. {platform.platformName} is committed to delivering consistent, risk-adjusted returns through disciplined portfolio management.</p>
           </div>
           <div>
             <h4 className="text-brand-text font-semibold text-sm mb-4 uppercase tracking-widest text-[11px]">Platform</h4>
@@ -512,14 +498,15 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
           <div>
             <h4 className="text-brand-text font-semibold text-sm mb-4 uppercase tracking-widest text-[11px]">Support</h4>
             <ul className="space-y-2">
-              <li><a href="mailto:support@alphavest.com" className="text-brand-muted hover:text-brand-gold transition-colors text-sm font-sans">support@alphavest.com</a></li>
-              <li><a href="tel:+18004258392" className="text-brand-muted hover:text-brand-gold transition-colors text-sm font-sans">+1 (800) 425-8392</a></li>
-              <li><span className="text-brand-muted text-sm font-sans">Mon–Fri, 9AM–6PM EST</span></li>
+              {platform.supportEmail && (
+                <li><a href={`mailto:${platform.supportEmail}`} className="text-brand-muted hover:text-brand-gold transition-colors text-sm font-sans">{platform.supportEmail}</a></li>
+              )}
+              <li><span className="text-brand-muted text-sm font-sans">Available 24/7 via live chat</span></li>
             </ul>
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-10 pt-8 border-t border-brand-border/40 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-brand-muted text-[11px] font-sans">© {new Date().getFullYear()} AlphaVest. All rights reserved. Investment involves risk.</p>
+          <p className="text-brand-muted text-[11px] font-sans">© {new Date().getFullYear()} {platform.platformName}. All rights reserved. Investment involves risk.</p>
           <div className="flex gap-6">
             {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map(item => (
               <a key={item} href="#" className="text-brand-muted hover:text-brand-gold transition-colors text-[11px] font-sans">{item}</a>

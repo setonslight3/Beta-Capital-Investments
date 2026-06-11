@@ -717,15 +717,52 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
           {!loading && tab === 'settings' && (
             <div className="max-w-3xl">
               <form onSubmit={saveSettings} className="space-y-6">
+
+                {/* Platform Branding */}
+                <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
+                  <h3 className="text-xs font-bold text-brand-text mb-1 uppercase tracking-wider">Platform Branding</h3>
+                  <p className="text-[10px] text-brand-muted font-sans mb-4">The platform name appears everywhere — header, footer, page title, emails, and notifications. Change it here to rebrand the entire site.</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { key: 'platform_name', label: 'Platform Name (e.g. AlphaVest)' },
+                      { key: 'support_email', label: 'Support Email' },
+                    ].map(f => (
+                      <div key={f.key}>
+                        <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>
+                        <input className={inputCls} value={settings[f.key] ?? ''} onChange={e => setSettings(p => ({ ...p, [f.key]: e.target.value }))} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tier Descriptions */}
+                <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
+                  <h3 className="text-xs font-bold text-brand-text mb-1 uppercase tracking-wider">Tier Descriptions</h3>
+                  <p className="text-[10px] text-brand-muted font-sans mb-4">Short description shown under each tier on the landing page and in the dashboard.</p>
+                  <div className="space-y-3">
+                    {[
+                      { key: 'tier_desc_bronze', label: 'Bronze Ore' },
+                      { key: 'tier_desc_silver', label: 'Silver Ore' },
+                      { key: 'tier_desc_gold', label: 'Gold Ore' },
+                      { key: 'tier_desc_platinum', label: 'Platinum Ore' },
+                      { key: 'tier_desc_diamond', label: 'Diamond Ore' },
+                    ].map(f => (
+                      <div key={f.key} className="grid grid-cols-4 gap-3 items-center">
+                        <label className="text-[10px] font-sans text-brand-muted uppercase tracking-wider col-span-1">{f.label}</label>
+                        <input className={`${inputCls} col-span-3`} value={settings[f.key] ?? ''} onChange={e => setSettings(p => ({ ...p, [f.key]: e.target.value }))} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* General */}
                 <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
                   <h3 className="text-xs font-bold text-brand-text mb-4 uppercase tracking-wider">General Settings</h3>
                   <div className="grid grid-cols-2 gap-4">
                     {[
                       { key: 'min_investment', label: 'Min Investment ($)' },
-                      { key: 'early_exit_penalty', label: 'Early Exit Penalty (e.g. 0.05)' },
+                      { key: 'early_exit_penalty', label: 'Early Exit Penalty (e.g. 0.05 = 5%)' },
                       { key: 'max_withdrawal_daily', label: 'Max Daily Withdrawal ($)' },
-                      { key: 'support_email', label: 'Support Email' },
                     ].map(f => (
                       <div key={f.key}>
                         <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>
@@ -814,8 +851,8 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
 
                 {/* Tier ROI Rates */}
                 <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
-                  <h3 className="text-xs font-bold text-brand-text mb-1 uppercase tracking-wider">Tier ROI Rates (Weekly %)</h3>
-                  <p className="text-[10px] text-brand-muted font-sans mb-4">Set the weekly return on investment for each tier. Changing these will notify all users. Enter as a number (e.g. 5.0 for 5%).</p>
+                  <h3 className="text-xs font-bold text-brand-text mb-1 uppercase tracking-wider">Tier Daily ROI Rates (%)</h3>
+                  <p className="text-[10px] text-brand-muted font-sans mb-4">Set the <strong>daily</strong> return on investment for each tier (applied every day over a 30-day term). Changing these will notify all users. Enter as a percentage (e.g. 0.25 for 0.25% per day).</p>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {[
                       { key: 'tier_roi_bronze', label: 'Bronze Ore' },

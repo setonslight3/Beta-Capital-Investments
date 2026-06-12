@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+﻿import { X } from 'lucide-react';
 import LogoIcon from './LogoIcon';
 
 interface LegalModalProps {
@@ -22,7 +22,7 @@ export default function LegalModal({ type, onClose }: LegalModalProps) {
                 {isTerms ? 'Terms of Service' : 'Privacy Policy'}
               </h2>
               <p className="text-[10px] text-brand-muted font-sans uppercase tracking-wider">
-                BetterCapitalInvestment Financial Services · Last Updated: January 2025
+                Beta Capital Investment Financial Services · Last Updated: January 2025
               </p>
             </div>
           </div>
@@ -58,7 +58,7 @@ function TermsContent() {
         Agreement to Terms
       </p>
       <p>
-        By accessing or using BetterCapitalInvestment ("Platform", "we", "our"), you agree to be bound by these Terms of Service. If you
+        By accessing or using Beta Capital Investment ("Platform", "we", "our"), you agree to be bound by these Terms of Service. If you
         do not agree, you may not access or use the Platform.
       </p>
 
@@ -70,12 +70,12 @@ function TermsContent() {
       <Section title="2. Account Registration">
         You agree to provide accurate, current, and complete information during registration. You are responsible for
         maintaining the confidentiality of your login credentials and for all activity that occurs under your account.
-        BetterCapitalInvestment is not liable for losses arising from unauthorised account access.
+        Beta Capital Investment is not liable for losses arising from unauthorised account access.
       </Section>
 
       <Section title="3. Investment Products & Risk Disclosure">
-        All investment products offered through BetterCapitalInvestment carry inherent financial risk. Past performance does not
-        guarantee future results. You acknowledge that you may lose part or all of your invested capital. BetterCapitalInvestment does
+        All investment products offered through Beta Capital Investment carry inherent financial risk. Past performance does not
+        guarantee future results. You acknowledge that you may lose part or all of your invested capital. Beta Capital Investment does
         not provide personalised financial advice. Always conduct independent due diligence before investing.
       </Section>
 
@@ -86,7 +86,7 @@ function TermsContent() {
       </Section>
 
       <Section title="5. Fees">
-        BetterCapitalInvestment charges no platform subscription fee. Early-exit fees (5% of principal) apply to pre-maturity
+        Beta Capital Investment charges no platform subscription fee. Early-exit fees (5% of principal) apply to pre-maturity
         withdrawals. Payment provider fees may apply and are charged separately by the respective providers.
       </Section>
 
@@ -97,12 +97,12 @@ function TermsContent() {
       </Section>
 
       <Section title="7. Intellectual Property">
-        All content, trademarks, and materials on the Platform are owned by or licensed to BetterCapitalInvestment. You may not
+        All content, trademarks, and materials on the Platform are owned by or licensed to Beta Capital Investment. You may not
         reproduce, distribute, or create derivative works without explicit written permission.
       </Section>
 
       <Section title="8. Limitation of Liability">
-        To the fullest extent permitted by law, BetterCapitalInvestment shall not be liable for indirect, incidental, special,
+        To the fullest extent permitted by law, Beta Capital Investment shall not be liable for indirect, incidental, special,
         consequential, or punitive damages, including loss of profits or data, arising from your use of the Platform.
       </Section>
 
@@ -112,12 +112,12 @@ function TermsContent() {
       </Section>
 
       <Section title="10. Changes to Terms">
-        BetterCapitalInvestment reserves the right to update these Terms at any time. Continued use of the Platform following notice
+        Beta Capital Investment reserves the right to update these Terms at any time. Continued use of the Platform following notice
         of changes constitutes acceptance of the revised Terms.
       </Section>
 
       <Section title="11. Contact">
-        Questions regarding these Terms may be directed to: <span className="text-brand-gold">legal@BetterCapitalInvestment.com</span>
+        Questions regarding these Terms may be directed to: <span className="text-brand-gold">legal@Beta Capital Investment.com</span>
       </Section>
     </>
   );
@@ -130,7 +130,7 @@ function PrivacyContent() {
         Your Privacy Matters
       </p>
       <p>
-        This Privacy Policy explains how BetterCapitalInvestment collects, uses, stores, and protects your personal information when
+        This Privacy Policy explains how Beta Capital Investment collects, uses, stores, and protects your personal information when
         you use our Platform.
       </p>
 
@@ -162,7 +162,7 @@ function PrivacyContent() {
       </Section>
 
       <Section title="4. Data Sharing">
-        BetterCapitalInvestment does not sell your personal data. We may share data with:
+        Beta Capital Investment does not sell your personal data. We may share data with:
         <ul className="list-disc pl-4 space-y-1 mt-1">
           <li><strong>Payment processors</strong> (Monnify, Flutterwave) — solely to process your transactions</li>
           <li><strong>Google</strong> — if you choose to sign in with Google</li>
@@ -183,7 +183,7 @@ function PrivacyContent() {
           <li>Request deletion of your account and associated data</li>
           <li>Withdraw consent where processing is based on consent</li>
         </ul>
-        To exercise your rights, contact <span className="text-brand-gold">privacy@BetterCapitalInvestment.com</span>.
+        To exercise your rights, contact <span className="text-brand-gold">privacy@Beta Capital Investment.com</span>.
       </Section>
 
       <Section title="7. Data Retention">
@@ -203,7 +203,7 @@ function PrivacyContent() {
       </Section>
 
       <Section title="10. Contact">
-        For privacy-related enquiries: <span className="text-brand-gold">privacy@BetterCapitalInvestment.com</span>
+        For privacy-related enquiries: <span className="text-brand-gold">privacy@Beta Capital Investment.com</span>
       </Section>
     </>
   );

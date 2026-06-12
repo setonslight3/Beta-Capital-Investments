@@ -21,8 +21,8 @@ export interface PlatformSettings {
 }
 
 const DEFAULTS: PlatformSettings = {
-  platformName: 'BetterCapitalInvestment',
-  supportEmail: 'support@BetterCapitalInvestment.space',
+  platformName: 'Beta Capital Investment',
+  supportEmail: 'support@betacapitalinvestment.com',
   socialLinkedin: '',
   socialTwitter: '',
   socialFacebook: '',
@@ -49,14 +49,14 @@ export function PlatformProvider({ children }: { children: ReactNode }) {
     fetch('/api/settings')
       .then(r => r.json())
       .then((d: Record<string, string>) => {
-        const name = d.platform_name || 'BetterCapitalInvestment';
+        const name = d.platform_name || 'Beta Capital Investment';
         document.title = name;
         // Update og meta tags dynamically
         const ogTitle = document.querySelector('meta[property="og:title"]');
         if (ogTitle) ogTitle.setAttribute('content', name);
         setSettings({
           platformName: name,
-          supportEmail: d.support_email || 'support@BetterCapitalInvestment.space',
+          supportEmail: d.support_email || 'support@betacapitalinvestment.com',
           socialLinkedin: d.social_linkedin || '',
           socialTwitter: d.social_twitter || '',
           socialFacebook: d.social_facebook || '',

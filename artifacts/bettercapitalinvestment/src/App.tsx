@@ -12,7 +12,7 @@ import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { PlatformProvider } from "./context/PlatformContext";
 import { useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
 
-const THEME_COOKIE = "BetterCapitalInvestment_theme";
+const THEME_COOKIE = "BetaCapitalInvestment_theme";
 
 function getThemeCookie(): ColorThemeType {
   try {
@@ -91,7 +91,7 @@ function injectTawkTo() {
         iframe[title="chat widget"] { filter: none !important; }
       `;
       document.head.appendChild(style);
-      tawk.setAttributes?.({ source: "BetterCapitalInvestment" }, () => {});
+      tawk.setAttributes?.({ source: "Beta Capital Investment" }, () => {});
     } catch { /* */ }
   };
 

@@ -2,39 +2,25 @@ import { InvestmentSector, InvestmentTier, Transaction } from './types';
 
 export const INVESTMENT_TIERS: InvestmentTier[] = [
   {
-    name: 'Bronze Ore',
+    name: 'Classic',
     minAmount: 3000,
-    maxAmount: 9999,
+    maxAmount: 24999,
     dailyROI: 0.0025,
-    description: 'Bronze level entry ore for establishing a strong, diversified interest stream.'
+    description: 'Entry-level tier for establishing a strong, diversified interest stream with steady growth.'
   },
   {
-    name: 'Silver Ore',
-    minAmount: 10000,
-    maxAmount: 49999,
-    dailyROI: 0.0035,
-    description: 'Silver level growth ore with enhanced daily yields for serious portfolios.'
-  },
-  {
-    name: 'Gold Ore',
-    minAmount: 50000,
-    maxAmount: 249999,
+    name: 'Pro',
+    minAmount: 25000,
+    maxAmount: 99999,
     dailyROI: 0.0045,
-    description: 'Our standard gold asset standard for securing prime real estate and premium commodities.'
+    description: 'Professional tier with enhanced daily yields and priority allocation for serious portfolios.'
   },
   {
-    name: 'Platinum Ore',
-    minAmount: 250000,
-    maxAmount: 999999,
-    dailyROI: 0.0055,
-    description: 'Elite platinum tier backing large-scale global initiatives and customized liquidity accounts.'
-  },
-  {
-    name: 'Diamond Ore',
-    minAmount: 1000000,
+    name: 'VIP',
+    minAmount: 100000,
     maxAmount: 100000000,
     dailyROI: 0.0070,
-    description: 'Supreme-tier backing designated for absolute sovereign wealth and maximal return flows.'
+    description: 'Elite tier with maximum returns, dedicated support, and access to exclusive investment opportunities.'
   }
 ];
 
@@ -154,7 +140,7 @@ export const INVESTMENT_SECTORS: InvestmentSector[] = [
 
 export const FAQ_ITEMS = [
   {
-    q: 'How do I get started with BetterCapitalInvestment?',
+    q: 'How do I get started with Beta Capital Investment?',
     a: 'Create a free account, complete identity verification, deposit funds using any supported payment method, then choose an investment plan that matches your goals. Our onboarding team will guide you every step of the way.'
   },
   {
@@ -178,8 +164,8 @@ export const FAQ_ITEMS = [
     a: 'We accept bank transfers (Monnify), card payments (Flutterwave), and cryptocurrency deposits including BTC, USDT-TRC20, and USDT-ERC20. All payment methods are listed in your deposit portal.'
   },
   {
-    q: 'How is BetterCapitalInvestment regulated?',
-    a: 'BetterCapitalInvestment is certified and registered as a financial services provider. Our operations comply with international AML and KYC requirements. A copy of our certification is available upon request from compliance@BetterCapitalInvestment.com.'
+    q: 'How is Beta Capital Investment regulated?',
+    a: 'Beta Capital Investment is certified and registered as a financial services provider. Our operations comply with international AML and KYC requirements. A copy of our certification is available upon request from compliance@betacapitalinvestment.com.'
   },
   {
     q: 'How do I contact support?',

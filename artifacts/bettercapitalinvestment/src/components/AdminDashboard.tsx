@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from 'react';
+﻿import { useState, useEffect, FormEvent } from 'react';
 import {
   Users, TrendingUp, Wallet, Activity, Settings, Bell, CreditCard,
   BarChart3, Loader2, LogOut, RefreshCw, Edit3, Check, X, ChevronDown,
@@ -391,7 +391,7 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                         <div className="grid grid-cols-2 gap-2">
                           <input className={inputCls} placeholder="Full Name" defaultValue={u.fullName} onChange={e => setUserEdits(p => ({ ...p, fullName: e.target.value }))} />
                           <select className={inputCls} defaultValue={u.tier} onChange={e => setUserEdits(p => ({ ...p, tier: e.target.value }))}>
-                            {['Gold Ore', 'Silver Sterling', 'Platinum Vault', 'Diamond Reserve'].map(t => <option key={t}>{t}</option>)}
+                            {['VIP', 'Silver Sterling', 'Platinum Vault', 'Diamond Reserve'].map(t => <option key={t}>{t}</option>)}
                           </select>
                           <input className={inputCls} placeholder="Balance" type="number" defaultValue={u.liquidity} onChange={e => setUserEdits(p => ({ ...p, liquidity: e.target.value }))} />
                           <select className={inputCls} defaultValue={String(u.emailVerified)} onChange={e => setUserEdits(p => ({ ...p, emailVerified: e.target.value }))}>
@@ -724,7 +724,7 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                   <p className="text-[10px] text-brand-muted font-sans mb-4">The platform name appears everywhere — header, footer, page title, emails, and notifications. Change it here to rebrand the entire site.</p>
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { key: 'platform_name', label: 'Platform Name (e.g. BetterCapitalInvestment)' },
+                      { key: 'platform_name', label: 'Platform Name (e.g. Beta Capital Investment)' },
                       { key: 'support_email', label: 'Support Email' },
                     ].map(f => (
                       <div key={f.key}>
@@ -741,11 +741,11 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                   <p className="text-[10px] text-brand-muted font-sans mb-4">Short description shown under each tier on the landing page and in the dashboard.</p>
                   <div className="space-y-3">
                     {[
-                      { key: 'tier_desc_bronze', label: 'Bronze Ore' },
-                      { key: 'tier_desc_silver', label: 'Silver Ore' },
-                      { key: 'tier_desc_gold', label: 'Gold Ore' },
-                      { key: 'tier_desc_platinum', label: 'Platinum Ore' },
-                      { key: 'tier_desc_diamond', label: 'Diamond Ore' },
+                      { key: 'tier_desc_bronze', label: 'Classic' },
+                      { key: 'tier_desc_silver', label: 'Pro' },
+                      { key: 'tier_desc_gold', label: 'VIP' },
+                      { key: 'tier_desc_platinum', label: 'Platinum' },
+                      { key: 'tier_desc_diamond', label: 'Diamond' },
                     ].map(f => (
                       <div key={f.key} className="grid grid-cols-4 gap-3 items-center">
                         <label className="text-[10px] font-sans text-brand-muted uppercase tracking-wider col-span-1">{f.label}</label>
@@ -855,11 +855,11 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                   <p className="text-[10px] text-brand-muted font-sans mb-4">Set the <strong>daily</strong> return on investment for each tier (applied every day over a 30-day term). Changing these will notify all users. Enter as a percentage (e.g. 0.25 for 0.25% per day).</p>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {[
-                      { key: 'tier_roi_bronze', label: 'Bronze Ore' },
-                      { key: 'tier_roi_silver', label: 'Silver Ore' },
-                      { key: 'tier_roi_gold', label: 'Gold Ore' },
-                      { key: 'tier_roi_platinum', label: 'Platinum Ore' },
-                      { key: 'tier_roi_diamond', label: 'Diamond Ore' },
+                      { key: 'tier_roi_bronze', label: 'Classic' },
+                      { key: 'tier_roi_silver', label: 'Pro' },
+                      { key: 'tier_roi_gold', label: 'VIP' },
+                      { key: 'tier_roi_platinum', label: 'Platinum' },
+                      { key: 'tier_roi_diamond', label: 'Diamond' },
                     ].map(f => (
                       <div key={f.key}>
                         <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>
@@ -878,11 +878,11 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                   <p className="text-[10px] text-brand-muted font-sans mb-4">Set the minimum investment amount required to qualify for each tier.</p>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {[
-                      { key: 'tier_min_bronze', label: 'Bronze Ore' },
-                      { key: 'tier_min_silver', label: 'Silver Ore' },
-                      { key: 'tier_min_gold', label: 'Gold Ore' },
-                      { key: 'tier_min_platinum', label: 'Platinum Ore' },
-                      { key: 'tier_min_diamond', label: 'Diamond Ore' },
+                      { key: 'tier_min_bronze', label: 'Classic' },
+                      { key: 'tier_min_silver', label: 'Pro' },
+                      { key: 'tier_min_gold', label: 'VIP' },
+                      { key: 'tier_min_platinum', label: 'Platinum' },
+                      { key: 'tier_min_diamond', label: 'Diamond' },
                     ].map(f => (
                       <div key={f.key}>
                         <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>
@@ -920,8 +920,8 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                   <p className="text-[10px] text-brand-muted font-sans mb-4">Required for biometric (fingerprint) login to work correctly. Should match your Netlify domain.</p>
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { key: 'app_domain', label: 'App Domain (e.g. BetterCapitalInvestment.space)', placeholder: 'BetterCapitalInvestment.space' },
-                      { key: 'app_origin', label: 'App Origin (e.g. https://BetterCapitalInvestment.space)', placeholder: 'https://BetterCapitalInvestment.space' },
+                      { key: 'app_domain', label: 'App Domain (e.g. Beta Capital Investment.space)', placeholder: 'Beta Capital Investment.space' },
+                      { key: 'app_origin', label: 'App Origin (e.g. https://Beta Capital Investment.space)', placeholder: 'https://Beta Capital Investment.space' },
                     ].map(f => (
                       <div key={f.key}>
                         <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>

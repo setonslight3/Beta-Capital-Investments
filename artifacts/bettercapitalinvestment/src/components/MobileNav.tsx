@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Menu,
   LogOut,
@@ -21,7 +22,7 @@ import { DashboardTab, UserSession, ColorThemeType } from "../types";
 const NAV_ITEMS: { id: DashboardTab; label: string; icon: typeof Activity }[] =
   [
     { id: "overview", label: "Overview", icon: Activity },
-    { id: "positions", label: "Positions", icon: Layers },
+    { id: "positions", label: "Invest", icon: Layers },
     { id: "ledger", label: "Ledger", icon: BarChart3 },
     { id: "analytics", label: "Analytics", icon: TrendingUp },
     { id: "notifications", label: "Alerts", icon: Bell },
@@ -50,8 +51,15 @@ export default function MobileNav({
   onLogout,
   onUpdateTheme,
 }: MobileNavProps) {
+  const [open, setOpen] = useState(false);
+
+  const handleTabChange = (tab: DashboardTab) => {
+    onTabChange(tab);
+    setOpen(false);
+  };
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <button
           aria-label="Open menu"
@@ -67,7 +75,7 @@ export default function MobileNav({
       >
         <SheetHeader className="p-6 pb-4 border-b border-brand-border">
           <SheetTitle className="text-brand-gold font-serif text-xl">
-            {session.fullName || "BetterCapitalInvestment"}
+            {session.fullName || "Beta Capital Investment"}
           </SheetTitle>
           {session.email && (
             <p className="text-xs text-brand-muted truncate">{session.email}</p>
@@ -89,7 +97,7 @@ export default function MobileNav({
               return (
                 <button
                   key={id}
-                  onClick={() => onTabChange(id)}
+                  onClick={() => handleTabChange(id)}
                   className={`flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors ${
                     active
                       ? "bg-brand-gold/10 text-brand-gold"

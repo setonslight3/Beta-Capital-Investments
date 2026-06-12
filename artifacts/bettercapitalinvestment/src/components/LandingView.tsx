@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { usePlatform } from '../context/PlatformContext';
 import {
   Shield, Eye, TrendingUp, ArrowRight, BookOpen, X, Palette, Globe2, ChevronDown,
@@ -144,7 +144,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
       <header className="sticky top-0 w-full z-50 flex items-center justify-between px-4 sm:px-6 md:px-16 h-16 bg-brand-bg/95 backdrop-blur-md border-b border-brand-border shadow-md">
         <button onClick={() => onNavigate('landing')} className="flex items-center gap-2 cursor-pointer">
           <LogoIcon size={32} />
-          <span className="font-serif text-lg font-bold text-brand-gold tracking-wider uppercase">BetterCapitalInvestment</span>
+          <span className="font-serif text-lg font-bold text-brand-gold tracking-wider uppercase">Beta Capital Investment</span>
         </button>
 
         <nav className="hidden md:flex gap-6 items-center">
@@ -203,7 +203,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
               <span className="text-brand-gold italic font-serif">Wealth Growth</span>
             </h1>
             <p className="text-base md:text-lg text-brand-muted/90 max-w-2xl mb-10 leading-relaxed">
-              Grow and protect your wealth with BetterCapitalInvestment. Professional investment plans focused on steady returns, transparent reporting, and effortless tracking.
+              Grow and protect your wealth with Beta Capital Investment. Professional investment plans focused on steady returns, transparent reporting, and effortless tracking.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button onClick={() => session.isLoggedIn ? onNavigate('dashboard') : onNavigate('signup')}
@@ -238,12 +238,12 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
           </div>
         </section>
 
-        {/* ── Why BetterCapitalInvestment ── */}
+        {/* ── Why Beta Capital Investment ── */}
         <section id="why" className="py-24 px-6 md:px-16 bg-brand-bg">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Secure & Trusted</span>
-              <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Why Choose BetterCapitalInvestment</h2>
+              <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Why Choose Beta Capital Investment</h2>
               <div className="h-[1px] w-24 bg-brand-gold mx-auto" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -354,7 +354,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
               <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Diversify Your Portfolio</span>
               <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Investment Sectors</h2>
               <div className="h-[1px] w-24 bg-brand-gold mx-auto mb-4" />
-              <p className="text-brand-muted text-sm max-w-xl mx-auto font-sans">BetterCapitalInvestment offers access to a curated selection of high-performing sectors, each carefully vetted and monitored for risk-adjusted returns.</p>
+              <p className="text-brand-muted text-sm max-w-xl mx-auto font-sans">Beta Capital Investment offers access to a curated selection of high-performing sectors, each carefully vetted and monitored for risk-adjusted returns.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {INVESTMENT_SECTORS.map(sector => (
@@ -391,7 +391,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
               <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Real-Time Data</span>
               <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Live Market Prices</h2>
               <div className="h-[1px] w-24 bg-brand-gold mx-auto mb-4" />
-              <p className="text-brand-muted text-sm max-w-xl mx-auto font-sans">Track live crypto and gold prices. BetterCapitalInvestment invests your capital in these markets and more — with full transparency.</p>
+              <p className="text-brand-muted text-sm max-w-xl mx-auto font-sans">Track live crypto and gold prices. Beta Capital Investment invests your capital in these markets and more — with full transparency.</p>
             </div>
             <MarketCharts />
           </div>
@@ -458,7 +458,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
           <div className="max-w-2xl mx-auto">
             <Award className="w-12 h-12 text-brand-gold mx-auto mb-6 opacity-80" />
             <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">Start Building Wealth Today</h2>
-            <p className="text-brand-muted text-base font-sans mb-10 max-w-lg mx-auto">Join over 18,500 investors who trust BetterCapitalInvestment to grow and protect their capital with professional, institutional-grade investment management.</p>
+            <p className="text-brand-muted text-base font-sans mb-10 max-w-lg mx-auto">Join over 18,500 investors who trust Beta Capital Investment to grow and protect their capital with professional, institutional-grade investment management.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => session.isLoggedIn ? onNavigate('dashboard') : onNavigate('signup')}
@@ -576,8 +576,8 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
             </div>
             <div className="p-6 space-y-5 text-sm font-sans text-brand-muted leading-relaxed max-h-[70vh] overflow-y-auto">
               <div>
-                <h3 className="text-brand-text font-bold mb-2">About BetterCapitalInvestment</h3>
-                <p>BetterCapitalInvestment is a wealth management platform offering access to curated, institutional-grade investment opportunities across multiple sectors including real estate, energy, private equity, and digital assets.</p>
+                <h3 className="text-brand-text font-bold mb-2">About Beta Capital Investment</h3>
+                <p>Beta Capital Investment is a wealth management platform offering access to curated, institutional-grade investment opportunities across multiple sectors including real estate, energy, private equity, and digital assets.</p>
               </div>
               <div>
                 <h3 className="text-brand-text font-bold mb-2">Investment Plans & Returns</h3>
@@ -585,7 +585,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
               </div>
               <div>
                 <h3 className="text-brand-text font-bold mb-2">Risk Disclosure</h3>
-                <p>All investments carry risk. Past performance is not indicative of future results. The value of investments can go down as well as up. You may receive less than you invest. BetterCapitalInvestment is not a licensed financial advisor.</p>
+                <p>All investments carry risk. Past performance is not indicative of future results. The value of investments can go down as well as up. You may receive less than you invest. Beta Capital Investment is not a licensed financial advisor.</p>
               </div>
               <div>
                 <h3 className="text-brand-text font-bold mb-2">Withdrawal Policy</h3>
@@ -593,7 +593,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
               </div>
               <div>
                 <h3 className="text-brand-text font-bold mb-2">KYC / AML</h3>
-                <p>In compliance with international regulations, BetterCapitalInvestment requires identity verification (KYC) for accounts above certain thresholds. We do not process funds from sanctioned jurisdictions.</p>
+                <p>In compliance with international regulations, Beta Capital Investment requires identity verification (KYC) for accounts above certain thresholds. We do not process funds from sanctioned jurisdictions.</p>
               </div>
             </div>
           </div>

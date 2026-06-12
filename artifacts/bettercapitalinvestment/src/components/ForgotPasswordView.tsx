@@ -97,7 +97,7 @@ export default function ForgotPasswordView({ onNavigate }: ForgotPasswordViewPro
       <header className="fixed top-0 w-full z-50 flex items-center justify-between px-6 h-16 bg-brand-bg/90 backdrop-blur-md border-b border-brand-border">
         <button onClick={() => onNavigate('landing')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <LogoIcon size={28} />
-          <span className="font-serif text-base font-bold text-brand-gold tracking-wider uppercase">BetterCapitalInvestment</span>
+          <span className="font-serif text-base font-bold text-brand-gold tracking-wider uppercase">Beta Capital Investment</span>
         </button>
         <button onClick={() => onNavigate('login')} className="flex items-center gap-1.5 text-brand-muted hover:text-brand-gold transition-colors text-xs font-sans">
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In

@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+﻿import { useState, FormEvent } from 'react';
 import { Lock, Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { ScreenType } from '../types';
 import LogoIcon from './LogoIcon';
@@ -99,7 +99,7 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
       <header className="fixed top-0 w-full z-50 flex items-center justify-between px-4 sm:px-6 md:px-16 h-14 sm:h-16 bg-brand-bg/95 backdrop-blur-md border-b border-brand-border">
         <button onClick={() => onNavigate('landing')} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <LogoIcon size={24} />
-          <span className="font-serif text-base font-bold text-brand-gold tracking-wider uppercase">BetterCapitalInvestment</span>
+          <span className="font-serif text-base font-bold text-brand-gold tracking-wider uppercase">Beta Capital Investment</span>
         </button>
         <button onClick={() => onNavigate('landing')} className="flex items-center gap-1.5 text-brand-muted hover:text-brand-gold transition-colors text-xs font-sans">
           <ArrowLeft className="w-3.5 h-3.5" />

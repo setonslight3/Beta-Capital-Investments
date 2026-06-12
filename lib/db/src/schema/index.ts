@@ -11,7 +11,7 @@ export const usersTable = pgTable("users", {
   avatarUrl: text("avatar_url"),
   isAdmin: boolean("is_admin").notNull().default(false),
   emailVerified: boolean("email_verified").notNull().default(false),
-  tier: varchar("tier", { length: 50 }).notNull().default("Gold Ore"),
+  tier: varchar("tier", { length: 50 }).notNull().default("Pro"),
   theme: varchar("theme", { length: 50 }).notNull().default("sovereign"),
   biometricEnabled: boolean("biometric_enabled").notNull().default(false),
   liquidity: real("liquidity").notNull().default(0),

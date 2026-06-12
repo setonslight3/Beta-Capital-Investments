@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { X, Cookie, Settings, ChevronDown, ChevronUp, Shield } from 'lucide-react';
 
-const COOKIE_KEY = 'BetterCapitalInvestment_cookie_consent';
-const PREFS_KEY = 'BetterCapitalInvestment_cookie_prefs';
+const COOKIE_KEY = 'Beta Capital Investment_cookie_consent';
+const PREFS_KEY = 'Beta Capital Investment_cookie_prefs';
 
 interface CookieCategory {
   id: string;

@@ -1,4 +1,4 @@
-import { useState, useMemo, FormEvent } from "react";
+﻿import { useState, useMemo, FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   TrendingUp,
@@ -115,6 +115,12 @@ export default function DashboardView({
     text: string;
     success: boolean;
   } | null>(null);
+
+  // Auto-scroll to top when tab changes
+  const handleTabChange = (tab: DashboardTab) => {
+    setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Modal states
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -442,7 +448,7 @@ export default function DashboardView({
           >
             <LogoIcon size={28} />
             <span className="font-serif text-base font-bold text-brand-gold tracking-wider uppercase">
-              BetterCapitalInvestment
+              Beta Capital Investment
             </span>
           </button>
         </div>
@@ -454,7 +460,7 @@ export default function DashboardView({
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => handleTabChange(item.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm transition-all ${active ? "bg-brand-gold/10 text-brand-gold border border-brand-gold/20" : "text-brand-muted hover:text-brand-text hover:bg-brand-bg/50"}`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
@@ -505,7 +511,7 @@ export default function DashboardView({
         <div className="flex items-center gap-2 min-w-0">
           <MobileNav
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             session={session}
             onLogout={onLogout}
             onUpdateTheme={onUpdateTheme}
@@ -514,7 +520,7 @@ export default function DashboardView({
 
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setActiveTab("notifications")}
+            onClick={() => handleTabChange("notifications")}
             className="relative text-brand-muted hover:text-brand-gold transition-colors p-1.5"
             aria-label="Notifications"
           >
@@ -530,7 +536,7 @@ export default function DashboardView({
 
       <MobileNav
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
         session={session}
         onLogout={onLogout}
         onUpdateTheme={onUpdateTheme}
@@ -704,7 +710,7 @@ export default function DashboardView({
                   Recent Activity
                 </h3>
                 <button
-                  onClick={() => setActiveTab("ledger")}
+                  onClick={() => handleTabChange("ledger")}
                   className="text-xs text-brand-gold font-sans hover:underline flex items-center gap-1"
                 >
                   View All <ChevronRight className="w-3 h-3" />

@@ -406,10 +406,9 @@ router.get("/admin/kyc/:id/file", requireAdmin, async (req: Request, res: Respon
   const id = Number(req.params.id);
   const [doc] = await db.select().from(kycDocumentsTable).where(eq(kycDocumentsTable.id, id)).limit(1);
   if (!doc) { res.status(404).json({ message: "Document not found" }); return; }
-  const buffer = Buffer.from(doc.fileDataBase64, "base64");
-  res.setHeader("Content-Type", doc.mimeType);
-  res.setHeader("Content-Disposition", `attachment; filename="${doc.fileName}"`);
-  res.send(buffer);
+  
+  // Redirect to Cloudinary URL
+  res.redirect(doc.fileUrl);
 });
 
 router.patch("/admin/kyc/:id", requireAdmin, async (req: Request, res: Response) => {

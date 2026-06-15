@@ -81,7 +81,7 @@ export const kycDocumentsTable = pgTable("kyc_documents", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
   docType: varchar("doc_type", { length: 50 }).notNull(), // passport | national_id | drivers_license | utility_bill
-  fileDataBase64: text("file_data_base64").notNull(),
+  fileUrl: text("file_url").notNull(), // Cloudinary URL
   fileName: text("file_name").notNull(),
   mimeType: varchar("mime_type", { length: 50 }).notNull(),
   status: varchar("status", { length: 20 }).notNull().default("pending"), // pending | approved | rejected

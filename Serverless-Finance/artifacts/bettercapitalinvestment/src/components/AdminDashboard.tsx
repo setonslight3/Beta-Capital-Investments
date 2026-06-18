@@ -3,7 +3,7 @@ import {
   Users, TrendingUp, Wallet, Activity, Settings, Bell, CreditCard,
   BarChart3, Loader2, LogOut, RefreshCw, Edit3, Check, X, ChevronDown,
   Shield, AlertTriangle, CheckCircle2, DollarSign, Layers, FileText,
-  Download, ArrowDownLeft, ShieldCheck
+  Download, ArrowDownLeft, ShieldCheck, Copy
 } from 'lucide-react';
 import { ScreenType, UserSession } from '../types';
 import LogoIcon from './LogoIcon';
@@ -68,6 +68,24 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
   const [error, setError] = useState('');
   const [feedback, setFeedback] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(id);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopied(id);
+      setTimeout(() => setCopied(null), 2000);
+    }
+  };
 
   // Edit states
   const [editingUser, setEditingUser] = useState<number | null>(null);
@@ -132,6 +150,7 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
       if (userEdits.liquidity !== undefined) data.liquidity = parseFloat(userEdits.liquidity);
       if (userEdits.isAdmin !== undefined) data.isAdmin = userEdits.isAdmin === 'true';
       if (userEdits.emailVerified !== undefined) data.emailVerified = userEdits.emailVerified === 'true';
+      if (userEdits.accountApproved !== undefined) data.accountApproved = userEdits.accountApproved === 'true';
       if (userEdits.fullName) data.fullName = userEdits.fullName;
       await apiFetch(`/admin/users/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       setEditingUser(null); setUserEdits({});
@@ -375,11 +394,12 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
           {/* ── USERS ── */}
           {!loading && tab === 'users' && (
             <div className="bg-brand-surface border border-brand-border rounded-lg overflow-hidden">
-              <div className="grid grid-cols-7 gap-3 px-4 py-3 border-b border-brand-border text-[10px] font-sans uppercase tracking-wider text-brand-muted">
+              <div className="grid grid-cols-8 gap-3 px-4 py-3 border-b border-brand-border text-[10px] font-sans uppercase tracking-wider text-brand-muted">
                 <span className="col-span-2">User</span>
                 <span>Tier</span>
                 <span>Balance</span>
-                <span>Status</span>
+                <span>Email Status</span>
+                <span>Account Status</span>
                 <span>Admin</span>
                 <span>Actions</span>
               </div>
@@ -398,6 +418,10 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                             <option value="true">Email Verified</option>
                             <option value="false">Not Verified</option>
                           </select>
+                          <select className={inputCls} defaultValue={String(u.accountApproved)} onChange={e => setUserEdits(p => ({ ...p, accountApproved: e.target.value }))}>
+                            <option value="true">Account Approved</option>
+                            <option value="false">Account Pending</option>
+                          </select>
                           <select className={inputCls} defaultValue={String(u.isAdmin)} onChange={e => setUserEdits(p => ({ ...p, isAdmin: e.target.value }))}>
                             <option value="false">User</option>
                             <option value="true">Admin</option>
@@ -409,7 +433,7 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                         </div>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-7 gap-3 items-center">
+                      <div className="grid grid-cols-8 gap-3 items-center">
                         <div className="col-span-2 min-w-0">
                           <div className="text-xs font-semibold text-brand-text truncate">{u.fullName}</div>
                           <div className="text-[10px] text-brand-muted font-sans truncate">{u.email}</div>
@@ -417,6 +441,7 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                         <span className="text-xs text-brand-gold font-sans">{u.tier}</span>
                         <span className="text-xs text-green-400 font-sans font-bold">{fmt(u.liquidity)}</span>
                         <span className={badge(u.emailVerified ? 'active' : 'pending')}>{u.emailVerified ? 'Verified' : 'Unverified'}</span>
+                        <span className={badge(u.accountApproved ? 'approved' : 'pending')}>{u.accountApproved ? 'Approved' : 'Pending'}</span>
                         <span className={`text-[10px] font-sans font-bold ${u.isAdmin ? 'text-red-400' : 'text-brand-muted'}`}>{u.isAdmin ? 'Admin' : 'User'}</span>
                         <div className="flex items-center gap-1.5">
                           <button onClick={() => setEditingUser(u.id)} className="text-brand-muted hover:text-brand-gold transition-colors" title="Edit"><Edit3 className="w-3.5 h-3.5" /></button>
@@ -525,7 +550,13 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                       <span className={`text-[10px] font-sans font-bold uppercase ${p.provider === 'crypto' ? 'text-yellow-400' : 'text-brand-muted'}`}>{p.provider}</span>
                       <span className="text-xs text-brand-gold font-bold">{fmt(p.amount)}</span>
                       <span className={badge(p.status)}>{p.status.replace('_', ' ')}</span>
-                      <div className="flex gap-1.5">
+                      <div className="flex gap-1.5 flex-wrap">
+                        {p.receiptFileDataBase64 && (
+                          <button onClick={() => window.open(`/api/admin/payments/${p.id}/receipt`, '_blank')}
+                            className="flex items-center gap-1 bg-brand-gold/10 border border-brand-gold/30 text-brand-gold hover:bg-brand-gold/20 text-[10px] px-2 py-1 rounded font-sans transition-colors">
+                            <Download className="w-3 h-3" /> Receipt
+                          </button>
+                        )}
                         {p.status !== 'success' && (
                           <button onClick={() => setPaymentStatus(p.id, 'success')}
                             className="flex items-center gap-1 bg-green-700/70 hover:bg-green-700 text-white text-[10px] px-2 py-1 rounded font-sans transition-colors">
@@ -575,18 +606,27 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                           {w.method === 'bank' && (
                             <div className="text-[10px] font-sans text-brand-muted text-right leading-loose">
                               <div>{w.bankName}</div>
-                              <div className="font-mono">{w.bankAccountNumber}</div>
+                              <button 
+                                onClick={() => copyToClipboard(w.bankAccountNumber, `withdraw-${w.id}-bank`)}
+                                className="font-mono hover:text-brand-gold transition-colors flex items-center gap-1 ml-auto"
+                              >
+                                {w.bankAccountNumber}
+                                {copied === `withdraw-${w.id}-bank` ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                              </button>
                               <div>{w.bankAccountName}</div>
                             </div>
                           )}
                           {w.method === 'crypto' && (
                             <div className="text-[10px] font-sans text-brand-muted text-right leading-loose">
                               <div className="font-bold text-yellow-400">{w.cryptoNetwork}</div>
-                              <div className="font-mono truncate max-w-[180px]">{w.cryptoAddress}</div>
+                              <button 
+                                onClick={() => copyToClipboard(w.cryptoAddress, `withdraw-${w.id}-crypto`)}
+                                className="font-mono truncate max-w-[180px] hover:text-brand-gold transition-colors flex items-center gap-1 ml-auto"
+                              >
+                                {w.cryptoAddress}
+                                {copied === `withdraw-${w.id}-crypto` ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                              </button>
                             </div>
-                          )}
-                          {w.method === 'paystack' && (
-                            <div className="text-[10px] font-sans text-brand-muted">Via Paystack</div>
                           )}
                         </div>
                       </div>
@@ -787,47 +827,6 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                   </div>
                 </div>
 
-                {/* Payment Gateways */}
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
-                  <h3 className="text-xs font-bold text-brand-text mb-4 uppercase tracking-wider">Payment Gateways</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                      { key: 'gateway_monnify_enabled', label: 'Monnify' },
-                      { key: 'gateway_paystack_enabled', label: 'Paystack' },
-                      { key: 'gateway_flutterwave_enabled', label: 'Flutterwave' },
-                      { key: 'gateway_crypto_enabled', label: 'Crypto' },
-                    ].map(f => (
-                      <div key={f.key}>
-                        <label className="block text-[10px] font-sans text-brand-muted uppercase tracking-wider mb-1">{f.label}</label>
-                        <select className={inputCls} value={settings[f.key] ?? 'true'} onChange={e => setSettings(p => ({ ...p, [f.key]: e.target.value }))}>
-                          <option value="true">Enabled</option>
-                          <option value="false">Disabled</option>
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Crypto Wallet Addresses */}
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
-                  <h3 className="text-xs font-bold text-brand-text mb-4 uppercase tracking-wider">Crypto Wallet Addresses</h3>
-                  <p className="text-[10px] text-brand-muted font-sans mb-4">Set the platform receiving addresses for crypto deposits. Leave blank to use environment variables.</p>
-                  <div className="space-y-3">
-                    {[
-                      { key: 'crypto_btc_address', label: 'Bitcoin (BTC)' },
-                      { key: 'crypto_usdt_trc20_address', label: 'USDT TRC-20' },
-                      { key: 'crypto_usdt_erc20_address', label: 'USDT ERC-20' },
-                      { key: 'crypto_eth_address', label: 'Ethereum (ETH)' },
-                      { key: 'crypto_sol_address', label: 'Solana (SOL)' },
-                    ].map(f => (
-                      <div key={f.key} className="grid grid-cols-3 gap-3 items-center">
-                        <label className="text-[10px] font-sans text-brand-muted uppercase tracking-wider">{f.label}</label>
-                        <input className={`${inputCls} col-span-2 font-mono text-[10px]`} value={settings[f.key] ?? ''} onChange={e => setSettings(p => ({ ...p, [f.key]: e.target.value }))} placeholder="Wallet address (optional)" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Withdrawal Method Toggles */}
                 <div className="bg-brand-surface border border-brand-border rounded-lg p-5">
                   <h3 className="text-xs font-bold text-brand-text mb-1 uppercase tracking-wider">Withdrawal Methods</h3>
@@ -835,7 +834,6 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                   <div className="grid grid-cols-3 gap-4">
                     {[
                       { key: 'withdraw_bank_enabled', label: 'Bank Transfer' },
-                      { key: 'withdraw_paystack_enabled', label: 'Paystack' },
                       { key: 'withdraw_crypto_enabled', label: 'Crypto' },
                     ].map(f => (
                       <div key={f.key}>

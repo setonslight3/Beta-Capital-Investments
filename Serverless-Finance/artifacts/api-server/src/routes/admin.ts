@@ -7,6 +7,7 @@ import {
 import { eq, desc, sql } from "drizzle-orm";
 import { requireAdmin } from "../lib/admin-middleware";
 import { sendEmail, withdrawalEmailHtml } from "../lib/mailer";
+import { sendAccountApprovedEmail } from "./auth";
 
 const router: IRouter = Router();
 
@@ -15,7 +16,6 @@ const fmt = (n: number) =>
 
 const DEFAULT_SETTINGS: Record<string, string> = {
   min_investment: "5000",
-  early_exit_penalty: "0.05",
   maintenance_mode: "false",
   allow_new_signups: "true",
   allow_new_investments: "true",
@@ -23,20 +23,10 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   platform_name: "BetterCapitalInvestment",
   support_email: "support@BetterCapitalInvestment.space",
   // Gateway toggles
-  gateway_monnify_enabled: "true",
-  gateway_paystack_enabled: "true",
-  gateway_flutterwave_enabled: "true",
   gateway_crypto_enabled: "true",
   // Withdrawal method toggles
   withdraw_bank_enabled: "true",
-  withdraw_paystack_enabled: "true",
   withdraw_crypto_enabled: "true",
-  // Crypto wallet addresses (set by admin, override env)
-  crypto_btc_address: "",
-  crypto_usdt_trc20_address: "",
-  crypto_usdt_erc20_address: "",
-  crypto_eth_address: "",
-  crypto_sol_address: "",
   // Tier daily ROI rates (%)
   tier_roi_bronze: "0.25",
   tier_roi_silver: "0.35",
@@ -72,18 +62,13 @@ const NOTIFY_ON_CHANGE: Record<string, (oldVal: string, newVal: string) => { tit
   tier_roi_gold: (_o, n) => ({ title: "Gold Ore ROI Updated", message: `The daily ROI for Gold Ore tier has been updated to ${n}% per day.` }),
   tier_roi_platinum: (_o, n) => ({ title: "Platinum Ore ROI Updated", message: `The daily ROI for Platinum Ore tier has been updated to ${n}% per day.` }),
   tier_roi_diamond: (_o, n) => ({ title: "Diamond Ore ROI Updated", message: `The daily ROI for Diamond Ore tier has been updated to ${n}% per day.` }),
-  early_exit_penalty: (_o, n) => {
-    const pct = Math.round(parseFloat(n) * 100);
-    return { title: "Early Exit Policy Update", message: `The early withdrawal penalty has been updated to ${pct}%. Please review your investment terms.` };
-  },
 };
 
 // ─── PUBLIC SETTINGS (no auth) ─────────────────────────────────────────────────
 
 const SAFE_KEYS = new Set([
-  "gateway_monnify_enabled", "gateway_paystack_enabled",
-  "gateway_flutterwave_enabled", "gateway_crypto_enabled",
-  "withdraw_bank_enabled", "withdraw_paystack_enabled", "withdraw_crypto_enabled",
+  "gateway_crypto_enabled",
+  "withdraw_bank_enabled", "withdraw_crypto_enabled",
   "support_email", "social_linkedin", "social_twitter", "social_facebook", "social_instagram",
   "platform_name", "maintenance_mode", "allow_new_signups",
   "tier_desc_bronze", "tier_desc_silver", "tier_desc_gold", "tier_desc_platinum", "tier_desc_diamond",
@@ -142,7 +127,7 @@ router.get("/admin/users", requireAdmin, async (_req: Request, res: Response) =>
   const users = await db.select().from(usersTable).orderBy(desc(usersTable.createdAt));
   res.json(users.map((u) => ({
     id: u.id, email: u.email, fullName: u.fullName, tier: u.tier,
-    isAdmin: u.isAdmin, emailVerified: u.emailVerified,
+    isAdmin: u.isAdmin, emailVerified: u.emailVerified, accountApproved: u.accountApproved,
     liquidity: u.liquidity, theme: u.theme, createdAt: u.createdAt,
     googleId: !!u.googleId,
     bankName: u.bankName, bankAccountNumber: u.bankAccountNumber,
@@ -154,17 +139,28 @@ router.get("/admin/users", requireAdmin, async (_req: Request, res: Response) =>
 
 router.patch("/admin/users/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const { tier, isAdmin, emailVerified, liquidity, fullName } = req.body;
+  const { tier, isAdmin, emailVerified, liquidity, fullName, accountApproved } = req.body;
   const updates: Partial<typeof usersTable.$inferInsert> = {};
   if (tier !== undefined) updates.tier = tier;
   if (isAdmin !== undefined) updates.isAdmin = isAdmin;
   if (emailVerified !== undefined) updates.emailVerified = emailVerified;
   if (liquidity !== undefined) updates.liquidity = liquidity;
   if (fullName !== undefined) updates.fullName = fullName;
+  if (accountApproved !== undefined) updates.accountApproved = accountApproved;
 
   const [user] = await db.update(usersTable).set(updates).where(eq(usersTable.id, id)).returning();
   if (!user) { res.status(404).json({ message: "User not found" }); return; }
-  res.json({ id: user.id, email: user.email, fullName: user.fullName, tier: user.tier, isAdmin: user.isAdmin, liquidity: user.liquidity, emailVerified: user.emailVerified });
+
+  // Send approval email if account was just approved
+  if (accountApproved === true) {
+    await sendAccountApprovedEmail(user);
+  }
+
+  res.json({ 
+    id: user.id, email: user.email, fullName: user.fullName, tier: user.tier, 
+    isAdmin: user.isAdmin, liquidity: user.liquidity, emailVerified: user.emailVerified,
+    accountApproved: user.accountApproved
+  });
 });
 
 router.delete("/admin/users/:id", requireAdmin, async (req: Request, res: Response) => {
@@ -247,10 +243,34 @@ router.get("/admin/payments", requireAdmin, async (_req: Request, res: Response)
     userId: paymentsTable.userId,
     userEmail: usersTable.email,
     userFullName: usersTable.fullName,
+    receiptFileName: paymentsTable.receiptFileName,
+    receiptMimeType: paymentsTable.receiptMimeType,
   }).from(paymentsTable)
     .leftJoin(usersTable, eq(paymentsTable.userId, usersTable.id))
     .orderBy(desc(paymentsTable.createdAt));
   res.json(payments);
+});
+
+router.get("/admin/payments/:id/receipt", requireAdmin, async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const [payment] = await db.select({
+    receiptFileDataBase64: paymentsTable.receiptFileDataBase64,
+    receiptFileName: paymentsTable.receiptFileName,
+    receiptMimeType: paymentsTable.receiptMimeType,
+  }).from(paymentsTable).where(eq(paymentsTable.id, id)).limit(1);
+  
+  if (!payment || !payment.receiptFileDataBase64) {
+    res.status(404).json({ message: "Receipt not found" });
+    return;
+  }
+  
+  // Extract base64 data without the data URI prefix
+  const base64Data = payment.receiptFileDataBase64.replace(/^data:.*;base64,/, "");
+  const buffer = Buffer.from(base64Data, "base64");
+  
+  res.setHeader("Content-Type", payment.receiptMimeType || "image/png");
+  res.setHeader("Content-Disposition", `inline; filename="${payment.receiptFileName || "receipt"}"`);
+  res.send(buffer);
 });
 
 router.patch("/admin/payments/:id", requireAdmin, async (req: Request, res: Response) => {

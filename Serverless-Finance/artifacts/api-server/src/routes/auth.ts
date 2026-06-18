@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { usersTable } from "@workspace/db/schema";
 import { notificationsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
+import { Resend } from "resend";
 
 const router: IRouter = Router();
 
@@ -17,6 +18,8 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "bonnieprincewill6@gmail.com,s
   .split(",")
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export function isAdminEmail(email: string): boolean {
   return ADMIN_EMAILS.includes(email.toLowerCase());
@@ -33,6 +36,7 @@ export function serializeUser(user: typeof usersTable.$inferSelect) {
     liquidity: user.liquidity,
     isAdmin: user.isAdmin,
     emailVerified: user.emailVerified,
+    accountApproved: user.accountApproved,
     avatarUrl: user.avatarUrl,
     bankName: user.bankName,
     bankAccountNumber: user.bankAccountNumber,
@@ -50,8 +54,45 @@ export function tierFromWealth(wealth: number): string {
   return "Bronze Ore";
 }
 
+async function sendWelcomeEmail(user: typeof usersTable.$inferSelect) {
+  if (!resend) return;
+  try {
+    await resend.emails.send({
+      from: "no-reply@bettercapitalinvestment.com",
+      to: user.email,
+      subject: "Welcome to BetterCapitalInvestment - Your Account is Under Review",
+      html: `
+        <h1>Welcome, ${user.fullName}!</h1>
+        <p>Thank you for signing up with BetterCapitalInvestment. Your account is currently under review by our admin team.</p>
+        <p>We'll notify you via email once your account has been approved and you can start investing.</p>
+        <p>Best regards,<br/>The BetterCapitalInvestment Team</p>
+      `,
+    });
+  } catch (err) {
+    console.error("Failed to send welcome email:", err);
+  }
+}
+
+export async function sendAccountApprovedEmail(user: typeof usersTable.$inferSelect) {
+  if (!resend) return;
+  try {
+    await resend.emails.send({
+      from: "no-reply@bettercapitalinvestment.com",
+      to: user.email,
+      subject: "Your BetterCapitalInvestment Account Has Been Approved!",
+      html: `
+        <h1>Great News, ${user.fullName}!</h1>
+        <p>Your account has been approved. You can now log in and start investing.</p>
+        <p>Best regards,<br/>The BetterCapitalInvestment Team</p>
+      `,
+    });
+  } catch (err) {
+    console.error("Failed to send approval email:", err);
+  }
+}
+
 router.post("/auth/signup", async (req: Request, res: Response) => {
-  const { email, password, fullName } = req.body;
+  const { email, password, fullName, phoneNumber } = req.body;
   if (!email || !password || !fullName) {
     res.status(400).json({ message: "All fields required" });
     return;
@@ -70,17 +111,16 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const admin = isAdminEmail(email);
 
-  // Auto-verify email when no email service is configured (Resend API key missing)
-  const autoVerify = !process.env.RESEND_API_KEY || admin;
-
   const [user] = await db
     .insert(usersTable)
     .values({
       email: email.toLowerCase(),
       fullName,
+      phoneNumber,
       passwordHash,
       isAdmin: admin,
-      emailVerified: autoVerify,
+      emailVerified: admin,
+      accountApproved: admin, // Admins are automatically approved
       tier: "Bronze Ore",
       theme: "sovereign",
       biometricEnabled: false,
@@ -93,14 +133,23 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
     id: notifId,
     userId: user.id,
     title: "Welcome to BetterCapitalInvestment",
-    message: "Your account has been created. Complete email verification then deposit funds to start building wealth.",
+    message: "Your account has been created and is under review. We'll notify you once it's approved.",
     timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
     read: false,
-    type: "success",
+    type: "info",
   });
 
-  req.session.userId = user.id;
-  res.status(201).json(serializeUser(user));
+  await sendWelcomeEmail(user);
+
+  // Don't log the user in immediately if not admin
+  if (admin) {
+    req.session.userId = user.id;
+  }
+  
+  res.status(201).json({
+    ...serializeUser(user),
+    pendingApproval: !admin,
+  });
 });
 
 router.post("/auth/login", async (req: Request, res: Response) => {
@@ -129,8 +178,14 @@ router.post("/auth/login", async (req: Request, res: Response) => {
 
   // Auto-promote admin emails
   if (isAdminEmail(email) && !user.isAdmin) {
-    await db.update(usersTable).set({ isAdmin: true }).where(eq(usersTable.id, user.id));
+    await db.update(usersTable).set({ isAdmin: true, accountApproved: true }).where(eq(usersTable.id, user.id));
     user.isAdmin = true;
+    user.accountApproved = true;
+  }
+
+  if (!user.accountApproved) {
+    res.status(403).json({ message: "Your account is still under review. We'll notify you once it's approved." });
+    return;
   }
 
   req.session.userId = user.id;

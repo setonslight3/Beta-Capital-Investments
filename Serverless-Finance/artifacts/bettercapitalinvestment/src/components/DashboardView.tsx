@@ -283,39 +283,7 @@ export default function DashboardView({
     );
   };
 
-  const handleEarlyWithdraw = (invId: string) => {
-    const inv = investments.find((i) => i.id === invId);
-    if (!inv) return;
-    const penalty = inv.amount * 0.05;
-    const returned = inv.amount - penalty + inv.accruedYield;
-    updateInvestment.mutate(
-      { id: invId, data: { status: "withdrawn_early" } },
-      {
-        onSuccess: () => {
-          updateLiquidity.mutate({ data: { delta: returned } });
-          createTransaction.mutate({
-            data: {
-              type: "Pre-Maturity Penalty",
-              fund: `Early exit: ${inv.sectorTitle}`,
-              amount: -penalty,
-            },
-          });
-          createTransaction.mutate({
-            data: {
-              type: "Withdrawal",
-              fund: `${inv.sectorTitle} principal returned`,
-              amount: returned,
-            },
-          });
-          setWithdrawInvestment(null);
-          triggerFeedback(
-            `Position closed. ${fmt(returned)} returned after 5% early exit fee.`,
-          );
-          invalidateAll();
-        },
-      },
-    );
-  };
+
 
   const handleSaveProfile = (e: FormEvent) => {
     e.preventDefault();
@@ -828,14 +796,7 @@ export default function DashboardView({
                           {inv.id} · Started {inv.startDateStamp}
                         </p>
                       </div>
-                      {inv.status === "active" && (
-                        <button
-                          onClick={() => setWithdrawInvestment(inv.id)}
-                          className="text-xs text-brand-muted hover:text-red-400 border border-brand-border hover:border-red-400/30 px-3 py-1.5 rounded font-sans transition-colors flex items-center gap-1.5"
-                        >
-                          <Trash2 className="w-3 h-3" /> Close
-                        </button>
-                      )}
+
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[

@@ -191,35 +191,35 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
 
       <main>
         {/* ── Hero ── */}
-        <section className="relative min-h-[780px] flex items-center px-6 md:px-16 overflow-hidden">
-          <div className="absolute inset-0 z-0 opacity-35 pointer-events-none">
-            <img alt="Finance district skyline" className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80" />
-            <div className="absolute inset-0 bg-gradient-to-b from-brand-bg/20 via-brand-bg/60 to-brand-bg" />
+      <section className="relative min-h-[780px] flex items-center px-6 md:px-16 overflow-hidden">
+        <div className="absolute inset-0 z-0 opacity-35 pointer-events-none">
+          <img alt="Finance district skyline" className="w-full h-full object-cover animate-scaleIn" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-bg/20 via-brand-bg/60 to-brand-bg" />
+        </div>
+        <div className="relative z-10 max-w-4xl pt-12 md:pt-0">
+          <span className="text-brand-gold text-xs tracking-[0.25em] font-bold mb-4 block uppercase font-sans animate-pulse">Premium Wealth Management</span>
+          <h1 className="text-4xl md:text-6xl md:leading-[72px] font-bold text-brand-text mb-6 animate-fadeInLeft delay-100">
+            Secure and Steady <br />
+            <span className="text-brand-gold italic font-serif">Wealth Growth</span>
+          </h1>
+          <p className="text-base md:text-lg text-brand-muted/90 max-w-2xl mb-10 leading-relaxed animate-fadeInLeft delay-200">
+            Grow and protect your wealth with BetterCapitalInvestment. Professional investment plans focused on steady returns, transparent reporting, and effortless tracking.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 animate-fadeInLeft delay-300">
+            <button onClick={() => session.isLoggedIn ? onNavigate('dashboard') : onNavigate('signup')}
+              className="bg-brand-gold text-brand-bg px-10 py-4 text-xs font-bold font-sans rounded uppercase tracking-widest hover:brightness-110 transition-all active:scale-95 inline-flex items-center justify-center gap-2 hover:scale-105 animate-wiggle">
+              {session.isLoggedIn ? 'Go to Dashboard' : 'Get Started'} <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={() => setShowProspectus(true)}
+              className="border border-brand-border text-brand-text px-10 py-4 text-xs font-bold font-sans rounded uppercase tracking-widest hover:bg-brand-surface transition-all active:scale-95 inline-flex items-center justify-center gap-2 hover:scale-105">
+              <BookOpen className="w-3.5 h-3.5 text-brand-gold" /> View Prospectus
+            </button>
           </div>
-          <div className="relative z-10 max-w-4xl pt-12 md:pt-0">
-            <span className="text-brand-gold text-xs tracking-[0.25em] font-bold mb-4 block uppercase font-sans animate-pulse">Premium Wealth Management</span>
-            <h1 className="text-4xl md:text-6xl md:leading-[72px] font-bold text-brand-text mb-6 animate-fadeInLeft delay-100">
-              Secure and Steady <br />
-              <span className="text-brand-gold italic font-serif">Wealth Growth</span>
-            </h1>
-            <p className="text-base md:text-lg text-brand-muted/90 max-w-2xl mb-10 leading-relaxed animate-fadeInLeft delay-200">
-              Grow and protect your wealth with BetterCapitalInvestment. Professional investment plans focused on steady returns, transparent reporting, and effortless tracking.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 animate-fadeInLeft delay-300">
-              <button onClick={() => session.isLoggedIn ? onNavigate('dashboard') : onNavigate('signup')}
-                className="bg-brand-gold text-brand-bg px-10 py-4 text-xs font-bold font-sans rounded uppercase tracking-widest hover:brightness-110 transition-all active:scale-95 inline-flex items-center justify-center gap-2">
-                {session.isLoggedIn ? 'Go to Dashboard' : 'Get Started'} <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button onClick={() => setShowProspectus(true)}
-                className="border border-brand-border text-brand-text px-10 py-4 text-xs font-bold font-sans rounded uppercase tracking-widest hover:bg-brand-surface transition-all active:scale-95 inline-flex items-center justify-center gap-2">
-                <BookOpen className="w-3.5 h-3.5 text-brand-gold" /> View Prospectus
-              </button>
-            </div>
-          </div>
-          <button onClick={handleScrollToSectors} className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-brand-muted hover:text-brand-gold transition-colors animate-bounce" aria-label="Scroll down">
-            <ChevronDown className="w-6 h-6" />
-          </button>
-        </section>
+        </div>
+        <button onClick={handleScrollToSectors} className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-brand-muted hover:text-brand-gold transition-colors animate-bounce" aria-label="Scroll down">
+          <ChevronDown className="w-6 h-6" />
+        </button>
+      </section>
 
         {/* ── Stats ── */}
         <section className="py-16 px-6 md:px-16 bg-brand-bg border-y border-brand-border">
@@ -580,84 +580,66 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
     </div>
     <style>{`
       @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
       }
-
       @keyframes fadeInLeft {
-        from {
-          opacity: 0;
-          transform: translateX(-30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
       }
-
       @keyframes fadeInRight {
-        from {
-          opacity: 0;
-          transform: translateX(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateX(0);
-        }
+        from { opacity: 0; transform: translateX(50px); }
+        to { opacity: 1; transform: translateX(0); }
       }
-
       @keyframes scaleIn {
-        from {
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
+        from { opacity: 0; transform: scale(0.85); }
+        to { opacity: 1; transform: scale(1); }
       }
-
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
       @keyframes glow {
-        0%, 100% {
-          box-shadow: 0 0 20px rgba(242, 202, 80, 0.3);
-        }
-        50% {
-          box-shadow: 0 0 40px rgba(242, 202, 80, 0.6);
-        }
+        0%, 100% { box-shadow: 0 0 30px rgba(242, 202, 80, 0.4); }
+        50% { box-shadow: 0 0 60px rgba(242, 202, 80, 0.8); }
       }
-
-      .animate-fadeInUp {
-        animation: fadeInUp 0.8s ease-out forwards;
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
       }
-
-      .animate-fadeInLeft {
-        animation: fadeInLeft 0.8s ease-out forwards;
+      @keyframes wiggle {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-5deg); }
+        75% { transform: rotate(5deg); }
       }
-
-      .animate-fadeInRight {
-        animation: fadeInRight 0.8s ease-out forwards;
+      @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
       }
-
-      .animate-scaleIn {
-        animation: scaleIn 0.6s ease-out forwards;
-      }
-
-      .animate-glow {
-        animation: glow 2s ease-in-out infinite;
-      }
-
+      .animate-fadeInUp { animation: fadeInUp 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+      .animate-fadeInLeft { animation: fadeInLeft 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+      .animate-fadeInRight { animation: fadeInRight 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+      .animate-scaleIn { animation: scaleIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+      .animate-bounce { animation: bounce 1.2s ease-in-out infinite; }
+      .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+      .animate-glow { animation: glow 2s ease-in-out infinite; }
+      .animate-slideIn { animation: slideIn 0.6s ease-out forwards; }
+      .animate-wiggle { animation: wiggle 2s ease-in-out infinite; }
       .delay-100 { animation-delay: 0.1s; }
       .delay-200 { animation-delay: 0.2s; }
       .delay-300 { animation-delay: 0.3s; }
       .delay-400 { animation-delay: 0.4s; }
       .delay-500 { animation-delay: 0.5s; }
       .delay-600 { animation-delay: 0.6s; }
+      .delay-700 { animation-delay: 0.7s; }
+      .delay-800 { animation-delay: 0.8s; }
+      .delay-900 { animation-delay: 0.9s; }
+      .hover\:scale-105:hover { transform: scale(1.05); }
+      .hover\:shadow-xl:hover { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
     `}</style>
   );
 }

@@ -34,7 +34,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   tier_roi_platinum: "0.55",
   tier_roi_diamond: "0.70",
   // Tier minimum investment amounts ($)
-  tier_min_bronze: "3000",
+  tier_min_bronze: "5000",
   tier_min_silver: "10000",
   tier_min_gold: "50000",
   tier_min_platinum: "250000",

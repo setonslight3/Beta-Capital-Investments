@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { X, Loader2, Copy, CheckCircle2, ExternalLink, Bitcoin, CreditCard, Building2, AlertCircle } from 'lucide-react';
+import { X, Loader2, Copy, CheckCircle2, Bitcoin, AlertCircle, Upload } from 'lucide-react';
 
 interface CryptoAddresses {
   btc: string | null;
@@ -14,7 +14,7 @@ interface PaymentModalProps {
   onSuccess: () => void;
 }
 
-type Tab = 'paystack' | 'flutterwave' | 'monnify' | 'crypto';
+type Tab = 'crypto';
 type CryptoNetwork = 'BTC' | 'USDT-TRC20' | 'USDT-ERC20' | 'ETH' | 'SOL';
 
 const NETWORK_MAP: Record<CryptoNetwork, keyof CryptoAddresses> = {
@@ -26,9 +26,6 @@ const NETWORK_MAP: Record<CryptoNetwork, keyof CryptoAddresses> = {
 };
 
 const ALL_TABS: { id: Tab; label: string; icon: React.ReactNode; settingKey: string }[] = [
-  { id: 'paystack', label: 'Paystack', icon: <CreditCard className="w-3.5 h-3.5" />, settingKey: 'gateway_paystack_enabled' },
-  { id: 'flutterwave', label: 'Flutterwave', icon: <CreditCard className="w-3.5 h-3.5" />, settingKey: 'gateway_flutterwave_enabled' },
-  { id: 'monnify', label: 'Monnify', icon: <Building2 className="w-3.5 h-3.5" />, settingKey: 'gateway_monnify_enabled' },
   { id: 'crypto', label: 'Crypto', icon: <Bitcoin className="w-3.5 h-3.5" />, settingKey: 'gateway_crypto_enabled' },
 ];
 
@@ -41,7 +38,8 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
   const [error, setError] = useState('');
   const [cryptoAddresses, setCryptoAddresses] = useState<CryptoAddresses>({ btc: null, usdtTrc20: null, usdtErc20: null, eth: null, sol: null });
   const [cryptoNetwork, setCryptoNetwork] = useState<CryptoNetwork>('USDT-TRC20');
-  const [txHash, setTxHash] = useState('');
+  const [receiptImage, setReceiptImage] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [copied, setCopied] = useState('');
   const [cryptoSubmitted, setCryptoSubmitted] = useState(false);
 
@@ -77,47 +75,50 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
     return isNaN(n) || n <= 0 ? null : n;
   };
 
-  const initGateway = async (provider: string) => {
-    const amt = parseAmount();
-    if (!amt) { setError('Enter a valid amount'); return; }
-    setLoading(true); setError('');
-    try {
-      const r = await fetch(`/api/payments/${provider}/initialize`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amt }),
-        credentials: 'include',
-      });
-      const data = await r.json();
-      if (!r.ok) { setError(data.message ?? 'Failed to initialize'); setLoading(false); return; }
-      if (data.checkoutUrl) window.open(data.checkoutUrl, '_blank');
-      onClose();
-    } catch {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (receiptImage) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReceiptPreview(reader.result as string);
+      };
+      reader.readAsDataURL(receiptImage);
+    } else {
+      setReceiptPreview(null);
     }
-  };
+  }, [receiptImage]);
 
   const handleCryptoSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const amt = parseAmount();
     if (!amt) { setError('Enter a valid amount'); return; }
-    if (!txHash.trim()) { setError('Paste your transaction hash'); return; }
+    if (!receiptImage) { setError('Please upload a receipt/screenshot of the transaction'); return; }
     setLoading(true); setError('');
+    
     try {
-      const r = await fetch('/api/payments/crypto/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amt, network: cryptoNetwork, txHash: txHash.trim() }),
-        credentials: 'include',
-      });
-      const data = await r.json();
-      if (!r.ok) { setError(data.message ?? 'Submission failed'); setLoading(false); return; }
-      setCryptoSubmitted(true);
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        const r = await fetch('/api/payments/crypto/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            amount: amt, 
+            network: cryptoNetwork, 
+            receiptBase64: base64,
+            fileName: receiptImage.name,
+            mimeType: receiptImage.type
+          }),
+          credentials: 'include',
+        });
+        const data = await r.json();
+        if (!r.ok) { setError(data.message ?? 'Submission failed'); setLoading(false); return; }
+        setCryptoSubmitted(true);
+        setLoading(false);
+      };
+      reader.readAsDataURL(receiptImage);
     } catch {
       setError('Network error. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -190,40 +191,6 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
             </div>
           )}
 
-          {/* Paystack / Flutterwave / Monnify tabs */}
-          {tab && (tab === 'paystack' || tab === 'flutterwave' || tab === 'monnify') && (
-            <form onSubmit={(e) => { e.preventDefault(); initGateway(tab); }} className="space-y-4">
-              <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-3 text-xs font-sans text-brand-muted leading-relaxed">
-                {tab === 'paystack' && '✓ Card, bank transfer, USSD via Paystack — USD & NGN accepted'}
-                {tab === 'flutterwave' && '✓ Card, bank transfer, mobile money via Flutterwave — global currencies'}
-                {tab === 'monnify' && '✓ Bank transfer and card via Monnify — NGN bank accounts'}
-              </div>
-              <div>
-                <label className="block text-brand-muted font-sans text-xs mb-1.5">Amount (USD)</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold font-sans text-sm">$</span>
-                  <input
-                    type="number"
-                    min="1"
-                    step="any"
-                    value={amount}
-                    onChange={e => setAmount(e.target.value)}
-                    placeholder="Enter amount"
-                    className="w-full bg-brand-bg border border-brand-border rounded-lg pl-7 pr-4 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-brand-gold text-black font-sans font-bold py-2.5 rounded-lg hover:bg-brand-gold/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
-              >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
-                {loading ? 'Redirecting…' : `Pay with ${tab.charAt(0).toUpperCase() + tab.slice(1)}`}
-              </button>
-            </form>
-          )}
-
           {/* Crypto tab */}
           {tab === 'crypto' && (
             <div className="space-y-4">
@@ -231,7 +198,7 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                 <div className="text-center py-6">
                   <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
                   <p className="text-brand-text font-serif font-bold text-lg">Submission Received</p>
-                  <p className="text-brand-muted font-sans text-sm mt-1">Your deposit is under review. Funds will be credited within 1–3 hours after blockchain confirmation.</p>
+                  <p className="text-brand-muted font-sans text-sm mt-1">Your deposit is under review. Funds will be credited within 1–3 hours after confirmation.</p>
                   <button onClick={onClose} className="mt-4 text-brand-gold font-sans text-sm hover:underline">Close</button>
                 </div>
               ) : (
@@ -270,11 +237,7 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                         </button>
                       </div>
                     </div>
-                  ) : (
-                    <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3">
-                      <p className="text-yellow-400 font-sans text-xs">Wallet address for {cryptoNetwork} not yet configured. Contact support.</p>
-                    </div>
-                  )}
+                  ) : null}
 
                   <div>
                     <label className="block text-brand-muted font-sans text-xs mb-1.5">Amount in USD equivalent</label>
@@ -289,17 +252,42 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                   </div>
 
                   <div>
-                    <label className="block text-brand-muted font-sans text-xs mb-1.5">Transaction Hash (after sending)</label>
-                    <input
-                      type="text" value={txHash} onChange={e => setTxHash(e.target.value)}
-                      placeholder="Paste your tx hash here"
-                      className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-mono text-[11px] focus:outline-none focus:border-brand-gold/60"
-                    />
+                    <label className="block text-brand-muted font-sans text-xs mb-1.5">Upload Receipt/Screenshot</label>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="receipt-upload"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setReceiptImage(file);
+                          }
+                        }}
+                      />
+                      <div className="flex flex-col items-center gap-2 w-full bg-brand-bg border border-brand-border rounded-lg py-4 px-3 transition-all hover:border-brand-gold/40">
+                        <Upload className="w-6 h-6 text-brand-gold" />
+                        {receiptImage ? (
+                          <div className="text-center">
+                            <p className="text-sm text-brand-text">{receiptImage.name}</p>
+                            {receiptPreview && (
+                              <img src={receiptPreview} alt="Receipt preview" className="mt-2 max-h-32 rounded object-contain" />
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center">
+                            <p className="text-sm text-brand-text">Click to upload receipt</p>
+                            <p className="text-[10px] text-brand-muted font-sans">PNG, JPG up to 5MB</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   <button
                     type="submit"
-                    disabled={loading || !currentAddress}
+                    disabled={loading || !receiptImage}
                     className="w-full bg-brand-gold text-black font-sans font-bold py-2.5 rounded-lg hover:bg-brand-gold/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
                   >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}

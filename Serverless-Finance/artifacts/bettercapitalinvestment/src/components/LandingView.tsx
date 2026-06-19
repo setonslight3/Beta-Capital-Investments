@@ -191,35 +191,35 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
 
       <main>
         {/* ── Hero ── */}
-        <section className="relative min-h-[780px] flex items-center px-6 md:px-16 overflow-hidden">
-          <div className="absolute inset-0 z-0 opacity-35 pointer-events-none">
-            <img alt="Finance district skyline" className="w-full h-full object-cover" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80" />
-            <div className="absolute inset-0 bg-gradient-to-b from-brand-bg/20 via-brand-bg/60 to-brand-bg" />
+      <section className="relative min-h-[780px] flex items-center px-6 md:px-16 overflow-hidden">
+        <div className="absolute inset-0 z-0 opacity-35 pointer-events-none">
+          <img alt="Finance district skyline" className="w-full h-full object-cover animate-scaleIn" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-bg/20 via-brand-bg/60 to-brand-bg" />
+        </div>
+        <div className="relative z-10 max-w-4xl pt-12 md:pt-0">
+          <span className="text-brand-gold text-xs tracking-[0.25em] font-bold mb-4 block uppercase font-sans animate-pulse">Premium Wealth Management</span>
+          <h1 className="text-4xl md:text-6xl md:leading-[72px] font-bold text-brand-text mb-6 animate-fadeInLeft delay-100">
+            Secure and Steady <br />
+            <span className="text-brand-gold italic font-serif">Wealth Growth</span>
+          </h1>
+          <p className="text-base md:text-lg text-brand-muted/90 max-w-2xl mb-10 leading-relaxed animate-fadeInLeft delay-200">
+            Grow and protect your wealth with BetterCapitalInvestment. Professional investment plans focused on steady returns, transparent reporting, and effortless tracking.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 animate-fadeInLeft delay-300">
+            <button onClick={() => session.isLoggedIn ? onNavigate('dashboard') : onNavigate('signup')}
+              className="bg-brand-gold text-brand-bg px-10 py-4 text-xs font-bold font-sans rounded uppercase tracking-widest hover:brightness-110 transition-all active:scale-95 inline-flex items-center justify-center gap-2 hover:scale-105 animate-wiggle">
+              {session.isLoggedIn ? 'Go to Dashboard' : 'Get Started'} <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={() => setShowProspectus(true)}
+              className="border border-brand-border text-brand-text px-10 py-4 text-xs font-bold font-sans rounded uppercase tracking-widest hover:bg-brand-surface transition-all active:scale-95 inline-flex items-center justify-center gap-2 hover:scale-105">
+              <BookOpen className="w-3.5 h-3.5 text-brand-gold" /> View Prospectus
+            </button>
           </div>
-          <div className="relative z-10 max-w-4xl pt-12 md:pt-0">
-            <span className="text-brand-gold text-xs tracking-[0.25em] font-bold mb-4 block uppercase font-sans">Trusted Wealth Platform · Certified in Zapposport</span>
-            <h1 className="text-4xl md:text-6xl md:leading-[72px] font-bold text-brand-text mb-6">
-              Secure and Steady <br />
-              <span className="text-brand-gold italic font-serif">Wealth Growth</span>
-            </h1>
-            <p className="text-base md:text-lg text-brand-muted/90 max-w-2xl mb-10 leading-relaxed">
-              Grow and protect your wealth with BetterCapitalInvestment. Professional investment plans focused on steady returns, transparent reporting, and effortless tracking.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button onClick={() => session.isLoggedIn ? onNavigate('dashboard') : onNavigate('signup')}
-                className="bg-brand-gold text-brand-bg px-10 py-4 text-xs font-bold font-sans rounded uppercase tracking-widest hover:brightness-110 transition-all active:scale-95 inline-flex items-center justify-center gap-2">
-                {session.isLoggedIn ? 'Go to Dashboard' : 'Get Started'} <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button onClick={() => setShowProspectus(true)}
-                className="border border-brand-border text-brand-text px-10 py-4 text-xs font-bold font-sans rounded uppercase tracking-widest hover:bg-brand-surface transition-all active:scale-95 inline-flex items-center justify-center gap-2">
-                <BookOpen className="w-3.5 h-3.5 text-brand-gold" /> View Prospectus
-              </button>
-            </div>
-          </div>
-          <button onClick={handleScrollToSectors} className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-brand-muted hover:text-brand-gold transition-colors animate-bounce" aria-label="Scroll down">
-            <ChevronDown className="w-6 h-6" />
-          </button>
-        </section>
+        </div>
+        <button onClick={handleScrollToSectors} className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-brand-muted hover:text-brand-gold transition-colors animate-bounce" aria-label="Scroll down">
+          <ChevronDown className="w-6 h-6" />
+        </button>
+      </section>
 
         {/* ── Stats ── */}
         <section className="py-16 px-6 md:px-16 bg-brand-bg border-y border-brand-border">
@@ -229,8 +229,8 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
               { value: '18,500+', label: 'Active Investors' },
               { value: '40+', label: 'Global Markets' },
               { value: '99.9%', label: 'Platform Uptime' },
-            ].map(stat => (
-              <div key={stat.label}>
+            ].map((stat, index) => (
+              <div key={stat.label} className={`animate-fadeInUp delay-${(index + 1) * 100}`}>
                 <div className="text-3xl md:text-4xl font-bold text-brand-gold mb-2">{stat.value}</div>
                 <div className="text-xs text-brand-muted font-sans tracking-wide uppercase">{stat.label}</div>
               </div>
@@ -241,13 +241,13 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         {/* ── Why BetterCapitalInvestment ── */}
         <section id="why" className="py-24 px-6 md:px-16 bg-brand-bg">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
+            <div className="text-center mb-16 animate-fadeInUp">
               <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Secure & Trusted</span>
               <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Why Choose BetterCapitalInvestment</h2>
               <div className="h-[1px] w-24 bg-brand-gold mx-auto" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2 border border-brand-border bg-brand-surface/50 p-8 md:p-10 flex flex-col justify-between group hover:border-brand-gold/60 transition-all duration-500 rounded">
+              <div className="md:col-span-2 border border-brand-border bg-brand-surface/50 p-8 md:p-10 flex flex-col justify-between group hover:border-brand-gold/60 transition-all duration-500 rounded animate-fadeInLeft delay-100">
                 <div>
                   <div className="w-12 h-12 rounded bg-brand-gold/10 flex items-center justify-center border border-brand-gold/20 mb-6"><Shield className="text-brand-gold w-6 h-6" /></div>
                   <h3 className="text-xl md:text-2xl font-semibold mb-4 text-brand-text">Bank-Level Security</h3>
@@ -257,17 +257,17 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
                   Learn About Our Security <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <div className="border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded">
+              <div className="border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded animate-fadeInUp delay-200">
                 <div className="w-12 h-12 rounded bg-brand-gold/10 flex items-center justify-center border border-brand-gold/20 mb-6"><Eye className="text-brand-gold w-6 h-6" /></div>
                 <h3 className="text-xl mb-4 text-brand-text">100% Transparency</h3>
                 <p className="text-brand-muted text-sm leading-relaxed">Real-time reports, clear progress logs, and full audit trails. Know exactly where your money is at every moment.</p>
               </div>
-              <div className="border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded">
+              <div className="border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded animate-fadeInUp delay-300">
                 <div className="w-12 h-12 rounded bg-brand-gold/10 flex items-center justify-center border border-brand-gold/20 mb-6"><TrendingUp className="text-brand-gold w-6 h-6" /></div>
                 <h3 className="text-xl mb-4 text-brand-text">Steady Growth</h3>
                 <p className="text-brand-muted text-sm leading-relaxed">Customized investment plans built to deliver the highest possible returns while maintaining a balanced, risk-adjusted framework.</p>
               </div>
-              <div className="md:col-span-2 border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded relative overflow-hidden">
+              <div className="md:col-span-2 border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded relative overflow-hidden animate-fadeInRight delay-400">
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
                   <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80" alt="Global" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-brand-surface/80" />
@@ -285,7 +285,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         {/* ── Investment Plans ── */}
         <section id="plans" ref={plansRef} className="py-24 px-6 md:px-16 bg-brand-surface/20">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
+            <div className="text-center mb-16 animate-fadeInUp">
               <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Structured Returns</span>
               <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Investment Plans</h2>
               <div className="h-[1px] w-24 bg-brand-gold mx-auto mb-4" />
@@ -293,9 +293,9 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-              {INVESTMENT_PLANS.map(plan => (
+              {INVESTMENT_PLANS.map((plan, index) => (
                 <div key={plan.id}
-                  className={`relative bg-brand-surface border-2 rounded-xl overflow-hidden transition-all duration-500 flex flex-col ${plan.colorClass} ${plan.popular ? 'shadow-2xl shadow-brand-gold/10 scale-[1.02]' : ''}`}>
+                  className={`relative bg-brand-surface border-2 rounded-xl overflow-hidden transition-all duration-500 flex flex-col ${plan.colorClass} ${plan.popular ? 'shadow-2xl shadow-brand-gold/10 scale-[1.02] animate-glow' : ''} animate-fadeInUp delay-${(index + 1) * 100}`}>
                   {plan.popular && (
                     <div className="absolute top-0 left-0 right-0 h-1 bg-brand-gold" />
                   )}
@@ -350,18 +350,18 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         {/* ── Investment Sectors ── */}
         <section id="sectors" ref={sectorsRef} className="py-24 px-6 md:px-16 bg-brand-bg">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
+            <div className="text-center mb-16 animate-fadeInUp">
               <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Diversify Your Portfolio</span>
               <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Investment Sectors</h2>
               <div className="h-[1px] w-24 bg-brand-gold mx-auto mb-4" />
               <p className="text-brand-muted text-sm max-w-xl mx-auto font-sans">BetterCapitalInvestment offers access to a curated selection of high-performing sectors, each carefully vetted and monitored for risk-adjusted returns.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {INVESTMENT_SECTORS.map(sector => (
+              {INVESTMENT_SECTORS.map((sector, index) => (
                 <div
                   key={sector.id}
                   onClick={() => sector.comingSoon ? setShowComingSoonSector(sector.title) : setSelectedSector(sector)}
-                  className="group relative overflow-hidden rounded-xl border border-brand-border hover:border-brand-gold/50 cursor-pointer transition-all duration-300 h-56"
+                  className={`group relative overflow-hidden rounded-xl border border-brand-border hover:border-brand-gold/50 cursor-pointer transition-all duration-300 h-56 animate-fadeInUp delay-${(index + 1) * 100}`}
                 >
                   <img src={sector.imageUrl} alt={sector.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-brand-bg via-brand-bg/60 to-transparent" />
@@ -397,29 +397,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
           </div>
         </section>
 
-        {/* ── Payment Methods ── */}
-        <section className="py-16 px-6 md:px-16 bg-brand-surface/20 border-y border-brand-border">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-8">
-              <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Trusted & Verified</span>
-              <h2 className="text-2xl md:text-3xl text-brand-text mb-3">Deposit & Withdrawal Methods</h2>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { name: 'Paystack', desc: 'Card & bank transfer', icon: '💳' },
-                { name: 'Flutterwave', desc: 'Global payments', icon: '🌍' },
-                { name: 'Monnify', desc: 'NGN bank transfer', icon: '🏦' },
-                { name: 'Crypto', desc: 'BTC · ETH · USDT · SOL', icon: '₿' },
-              ].map(m => (
-                <div key={m.name} className="bg-brand-surface border border-brand-border rounded-lg p-4 text-center hover:border-brand-gold/40 transition-colors">
-                  <div className="text-2xl mb-2">{m.icon}</div>
-                  <div className="text-sm font-semibold text-brand-text mb-1">{m.name}</div>
-                  <div className="text-[11px] text-brand-muted font-sans">{m.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+
 
         {/* ── FAQ ── */}
         <section className="py-24 px-6 md:px-16 bg-brand-bg">
@@ -600,5 +578,68 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         </div>
       )}
     </div>
+    <style>{`
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeInLeft {
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(50px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.85); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      @keyframes glow {
+        0%, 100% { box-shadow: 0 0 30px rgba(242, 202, 80, 0.4); }
+        50% { box-shadow: 0 0 60px rgba(242, 202, 80, 0.8); }
+      }
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes wiggle {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-5deg); }
+        75% { transform: rotate(5deg); }
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+      }
+      .animate-fadeInUp { animation: fadeInUp 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+      .animate-fadeInLeft { animation: fadeInLeft 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+      .animate-fadeInRight { animation: fadeInRight 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+      .animate-scaleIn { animation: scaleIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+      .animate-bounce { animation: bounce 1.2s ease-in-out infinite; }
+      .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+      .animate-glow { animation: glow 2s ease-in-out infinite; }
+      .animate-slideIn { animation: slideIn 0.6s ease-out forwards; }
+      .animate-wiggle { animation: wiggle 2s ease-in-out infinite; }
+      .delay-100 { animation-delay: 0.1s; }
+      .delay-200 { animation-delay: 0.2s; }
+      .delay-300 { animation-delay: 0.3s; }
+      .delay-400 { animation-delay: 0.4s; }
+      .delay-500 { animation-delay: 0.5s; }
+      .delay-600 { animation-delay: 0.6s; }
+      .delay-700 { animation-delay: 0.7s; }
+      .delay-800 { animation-delay: 0.8s; }
+      .delay-900 { animation-delay: 0.9s; }
+      .hover\:scale-105:hover { transform: scale(1.05); }
+      .hover\:shadow-xl:hover { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
+    `}</style>
   );
 }

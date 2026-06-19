@@ -6,11 +6,13 @@ export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   fullName: text("full_name").notNull(),
+  phoneNumber: varchar("phone_number", { length: 50 }),
   passwordHash: text("password_hash"),
   googleId: varchar("google_id", { length: 255 }),
   avatarUrl: text("avatar_url"),
   isAdmin: boolean("is_admin").notNull().default(false),
   emailVerified: boolean("email_verified").notNull().default(false),
+  accountApproved: boolean("account_approved").notNull().default(false),
   tier: varchar("tier", { length: 50 }).notNull().default("Gold Ore"),
   theme: varchar("theme", { length: 50 }).notNull().default("sovereign"),
   biometricEnabled: boolean("biometric_enabled").notNull().default(false),
@@ -55,6 +57,9 @@ export const paymentsTable = pgTable("payments", {
   currency: varchar("currency", { length: 10 }).notNull().default("USD"),
   status: varchar("status", { length: 20 }).notNull().default("pending"), // pending | success | failed | manual_review
   metadata: text("metadata"), // JSON string for provider-specific data
+  receiptFileDataBase64: text("receipt_file_data_base64"),
+  receiptFileName: text("receipt_file_name"),
+  receiptMimeType: varchar("receipt_mime_type", { length: 100 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

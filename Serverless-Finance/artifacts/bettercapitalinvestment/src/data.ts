@@ -80,10 +80,10 @@ export const INVESTMENT_PLANS: InvestmentPlan[] = [
     minAmount: 25000,
     maxAmountLabel: '$50,000',
     rateLabel: '5% Interest Rate',
-    rateDetail: 'Fixed Returns',
+    rateDetail: '30-Day Term',
     features: [
       'Min. $25,000 — Max. $50,000',
-      '5% fixed interest rate',
+      '5% fixed interest rate over 30 days',
       'Priority fund allocation',
       'Dedicated account manager',
       'Advanced analytics access',
@@ -100,10 +100,10 @@ export const INVESTMENT_PLANS: InvestmentPlan[] = [
     minAmount: 50000,
     maxAmountLabel: '1 BTC & above',
     rateLabel: '8% Interest Rate',
-    rateDetail: 'Premium Returns',
+    rateDetail: '30-Day Term',
     features: [
       'Min. $50,000 — Max. 1 BTC+',
-      '8% premium interest rate',
+      '8% premium interest rate over 30 days',
       'Gold & crypto diversification',
       'Private wealth concierge',
       'White-glove onboarding',
@@ -169,13 +169,10 @@ export const FAQ_ITEMS = [
     q: 'Is my investment insured or protected?',
     a: 'Client funds are held in segregated accounts protected by AES-256 encryption and multi-signature cold storage. We conduct regular third-party audits. While all investments carry risk, our risk management framework is built to institutional standards.'
   },
-  {
-    q: 'Can I withdraw my capital before maturity?',
-    a: 'Early withdrawals are permitted with a 5% early-exit fee applied to the principal. Accrued yield up to the withdrawal date is retained in full. Contact support to initiate an early exit.'
-  },
+
   {
     q: 'What payment methods are accepted?',
-    a: 'We accept bank transfers (Monnify), card payments (Flutterwave), and cryptocurrency deposits including BTC, USDT-TRC20, and USDT-ERC20. All payment methods are listed in your deposit portal.'
+    a: 'We accept cryptocurrency deposits including BTC, USDT-TRC20, and USDT-ERC20, and bank transfers for withdrawals. All payment methods are listed in your deposit portal.'
   },
   {
     q: 'How is BetterCapitalInvestment regulated?',

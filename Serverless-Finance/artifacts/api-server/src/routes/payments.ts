@@ -44,245 +44,7 @@ async function creditUser(userId: number, amount: number, fund: string, type: st
   });
 }
 
-// ─── MONNIFY ───────────────────────────────────────────────────────────────────
 
-async function monnifyToken(): Promise<string> {
-  const key = `${process.env.MONNIFY_API_KEY}:${process.env.MONNIFY_SECRET_KEY}`;
-  const base64 = Buffer.from(key).toString("base64");
-  const baseUrl = process.env.MONNIFY_BASE_URL ?? "https://sandbox.monnify.com";
-  const resp = await axios.post(`${baseUrl}/api/v1/auth/login`, {}, {
-    headers: { Authorization: `Basic ${base64}` },
-  });
-  return resp.data.responseBody.accessToken;
-}
-
-router.post("/payments/monnify/initialize", async (req: Request, res: Response) => {
-  const userId = requireAuth(req, res);
-  if (!userId) return;
-
-  const enabled = await getSetting("gateway_monnify_enabled", "true");
-  if (enabled === "false") { res.status(503).json({ message: "Monnify is currently disabled" }); return; }
-  if (!process.env.MONNIFY_API_KEY) { res.status(503).json({ message: "Monnify not configured" }); return; }
-
-  const { amount } = req.body;
-  if (!amount || amount <= 0) { res.status(400).json({ message: "Valid amount required" }); return; }
-
-  try {
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-    const token = await monnifyToken();
-    const baseUrl = process.env.MONNIFY_BASE_URL ?? "https://sandbox.monnify.com";
-    const reference = `av_monnify_${Date.now()}_${userId}`;
-
-    const resp = await axios.post(
-      `${baseUrl}/api/v1/merchant/transactions/init-transaction`,
-      {
-        amount,
-        customerName: user.fullName,
-        customerEmail: user.email,
-        paymentReference: reference,
-        paymentDescription: "BetterCapitalInvestment Deposit",
-        currencyCode: "NGN",
-        contractCode: process.env.MONNIFY_CONTRACT_CODE,
-        redirectUrl: `${process.env.FRONTEND_URL ?? ""}?deposit=success`,
-        paymentMethods: ["CARD", "ACCOUNT_TRANSFER"],
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
-
-    const payId = genId();
-    await db.insert(paymentsTable).values({
-      id: payId, userId, provider: "monnify", referenceId: reference,
-      amount, currency: "NGN", status: "pending",
-      metadata: JSON.stringify(resp.data.responseBody),
-    });
-
-    res.json({ checkoutUrl: resp.data.responseBody.checkoutUrl, reference, paymentId: payId });
-  } catch (err: unknown) {
-    req.log.error({ err }, "Monnify init failed");
-    res.status(500).json({ message: "Failed to initialize Monnify payment" });
-  }
-});
-
-router.post("/payments/monnify/webhook", async (req: Request, res: Response) => {
-  // Verify Monnify webhook hash
-  const hash = process.env.MONNIFY_SECRET_KEY ?? "";
-  const signature = req.headers["monnify-signature"] as string | undefined;
-  if (hash && signature) {
-    const computedHash = crypto.createHmac("sha512", hash).update(JSON.stringify(req.body)).digest("hex");
-    if (computedHash !== signature) { res.status(401).json({ message: "Invalid signature" }); return; }
-  }
-
-  const payload = req.body;
-  if (payload.paymentStatus !== "PAID") { res.json({ message: "ignored" }); return; }
-
-  const reference = payload.paymentReference;
-  const [payment] = await db.select().from(paymentsTable).where(eq(paymentsTable.referenceId, reference)).limit(1);
-  if (!payment || payment.status === "success") { res.json({ message: "already processed" }); return; }
-
-  await db.update(paymentsTable).set({ status: "success" }).where(eq(paymentsTable.id, payment.id));
-  await creditUser(payment.userId, payment.amount, "Monnify Bank Transfer", "Bank Deposit");
-
-  const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  await db.insert(notificationsTable).values({
-    id: notifId, userId: payment.userId, title: "Deposit Confirmed",
-    message: `${fmt(payment.amount)} received via Monnify and credited to your account.`,
-    timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
-    read: false, type: "success",
-  });
-
-  res.json({ message: "processed" });
-});
-
-// ─── PAYSTACK ──────────────────────────────────────────────────────────────────
-
-router.post("/payments/paystack/initialize", async (req: Request, res: Response) => {
-  const userId = requireAuth(req, res);
-  if (!userId) return;
-
-  const enabled = await getSetting("gateway_paystack_enabled", "true");
-  if (enabled === "false") { res.status(503).json({ message: "Paystack is currently disabled" }); return; }
-  if (!process.env.PAYSTACK_SECRET_KEY) { res.status(503).json({ message: "Paystack not configured" }); return; }
-
-  const { amount } = req.body;
-  if (!amount || amount <= 0) { res.status(400).json({ message: "Valid amount required" }); return; }
-
-  try {
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-    const reference = `av_pstk_${Date.now()}_${userId}`;
-    // Paystack amount is in kobo (NGN) or USD cents — we'll use NGN kobo
-    const amountKobo = Math.round(amount * 100);
-
-    const resp = await axios.post(
-      "https://api.paystack.co/transaction/initialize",
-      {
-        email: user.email,
-        amount: amountKobo,
-        reference,
-        currency: "USD",
-        callback_url: `${process.env.FRONTEND_URL ?? ""}?deposit=success`,
-        metadata: { userId, fullName: user.fullName },
-      },
-      { headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, "Content-Type": "application/json" } },
-    );
-
-    const payId = genId();
-    await db.insert(paymentsTable).values({
-      id: payId, userId, provider: "paystack", referenceId: reference,
-      amount, currency: "USD", status: "pending",
-      metadata: JSON.stringify(resp.data.data),
-    });
-
-    res.json({ checkoutUrl: resp.data.data?.authorization_url, reference, paymentId: payId });
-  } catch (err: unknown) {
-    req.log.error({ err }, "Paystack init failed");
-    res.status(500).json({ message: "Failed to initialize Paystack payment" });
-  }
-});
-
-router.post("/payments/paystack/webhook", async (req: Request, res: Response) => {
-  const secret = process.env.PAYSTACK_SECRET_KEY ?? "";
-  const signature = req.headers["x-paystack-signature"] as string;
-  if (secret && signature) {
-    const hash = crypto.createHmac("sha512", secret).update(JSON.stringify(req.body)).digest("hex");
-    if (hash !== signature) { res.status(401).json({ message: "Invalid signature" }); return; }
-  }
-
-  const payload = req.body;
-  if (payload.event !== "charge.success") { res.json({ message: "ignored" }); return; }
-
-  const reference = payload.data?.reference;
-  const [payment] = await db.select().from(paymentsTable).where(eq(paymentsTable.referenceId, reference)).limit(1);
-  if (!payment || payment.status === "success") { res.json({ message: "already processed" }); return; }
-
-  await db.update(paymentsTable).set({ status: "success" }).where(eq(paymentsTable.id, payment.id));
-  await creditUser(payment.userId, payment.amount, "Paystack", "Bank Deposit");
-
-  const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  await db.insert(notificationsTable).values({
-    id: notifId, userId: payment.userId, title: "Deposit Confirmed",
-    message: `${fmt(payment.amount)} received via Paystack and credited to your account.`,
-    timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
-    read: false, type: "success",
-  });
-
-  res.json({ message: "processed" });
-});
-
-// ─── FLUTTERWAVE ───────────────────────────────────────────────────────────────
-
-router.post("/payments/flutterwave/initialize", async (req: Request, res: Response) => {
-  const userId = requireAuth(req, res);
-  if (!userId) return;
-
-  const enabled = await getSetting("gateway_flutterwave_enabled", "true");
-  if (enabled === "false") { res.status(503).json({ message: "Flutterwave is currently disabled" }); return; }
-  if (!process.env.FLW_SECRET_KEY) { res.status(503).json({ message: "Flutterwave not configured" }); return; }
-
-  const { amount } = req.body;
-  if (!amount || amount <= 0) { res.status(400).json({ message: "Valid amount required" }); return; }
-
-  try {
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-    const txRef = `av_flw_${Date.now()}_${userId}`;
-
-    const resp = await axios.post(
-      "https://api.flutterwave.com/v3/payments",
-      {
-        tx_ref: txRef,
-        amount,
-        currency: "USD",
-        payment_options: "card,banktransfer,ussd",
-        redirect_url: `${process.env.FRONTEND_URL ?? ""}?deposit=success`,
-        customer: { email: user.email, name: user.fullName },
-        customizations: {
-          title: "BetterCapitalInvestment Deposit",
-          description: "Fund your investment account",
-        },
-      },
-      { headers: { Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`, "Content-Type": "application/json" } },
-    );
-
-    const payId = genId();
-    await db.insert(paymentsTable).values({
-      id: payId, userId, provider: "flutterwave", referenceId: txRef,
-      amount, currency: "USD", status: "pending",
-      metadata: JSON.stringify({ link: resp.data.data?.link }),
-    });
-
-    res.json({ checkoutUrl: resp.data.data?.link, reference: txRef, paymentId: payId });
-  } catch (err: unknown) {
-    req.log.error({ err }, "Flutterwave init failed");
-    res.status(500).json({ message: "Failed to initialize Flutterwave payment" });
-  }
-});
-
-router.post("/payments/flutterwave/webhook", async (req: Request, res: Response) => {
-  const secretHash = process.env.FLW_SECRET_HASH ?? "";
-  const signature = req.headers["verif-hash"] as string;
-  if (secretHash && signature !== secretHash) { res.status(401).json({ message: "Invalid signature" }); return; }
-
-  const payload = req.body;
-  if (payload.event !== "charge.completed" || payload.data?.status !== "successful") {
-    res.json({ message: "ignored" }); return;
-  }
-
-  const txRef = payload.data.tx_ref;
-  const [payment] = await db.select().from(paymentsTable).where(eq(paymentsTable.referenceId, txRef)).limit(1);
-  if (!payment || payment.status === "success") { res.json({ message: "already processed" }); return; }
-
-  await db.update(paymentsTable).set({ status: "success" }).where(eq(paymentsTable.id, payment.id));
-  await creditUser(payment.userId, payment.amount, "Flutterwave", "Bank Deposit");
-
-  const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  await db.insert(notificationsTable).values({
-    id: notifId, userId: payment.userId, title: "Deposit Confirmed",
-    message: `${fmt(payment.amount)} received via Flutterwave and credited to your account.`,
-    timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
-    read: false, type: "success",
-  });
-
-  res.json({ message: "processed" });
-});
 
 // ─── CRYPTO DEPOSITS ───────────────────────────────────────────────────────────
 
@@ -307,17 +69,24 @@ router.post("/payments/crypto/submit", async (req: Request, res: Response) => {
   const userId = requireAuth(req, res);
   if (!userId) return;
 
-  const { amount, network, txHash } = req.body;
-  if (!amount || !network || !txHash) {
-    res.status(400).json({ message: "amount, network, and txHash required" });
+  const { amount, network, receiptBase64, fileName, mimeType } = req.body;
+  if (!amount || !network || !receiptBase64) {
+    res.status(400).json({ message: "amount, network, and receipt required" });
     return;
   }
 
   const payId = genId();
   await db.insert(paymentsTable).values({
-    id: payId, userId, provider: "crypto", txHash,
-    amount, currency: "USD", status: "manual_review",
+    id: payId, 
+    userId, 
+    provider: "crypto", 
+    amount, 
+    currency: "USD", 
+    status: "manual_review",
     metadata: JSON.stringify({ network }),
+    receiptFileDataBase64: receiptBase64,
+    receiptFileName: fileName,
+    receiptMimeType: mimeType,
   });
 
   const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -341,7 +110,7 @@ router.post("/payments/withdraw", async (req: Request, res: Response) => {
   const { amount, method, bankName, bankAccountNumber, bankAccountName, cryptoAddress, cryptoNetwork } = req.body;
 
   if (!amount || amount <= 0) { res.status(400).json({ message: "Valid amount required" }); return; }
-  if (!["bank", "crypto", "paystack"].includes(method)) { res.status(400).json({ message: "Invalid method" }); return; }
+  if (!["bank", "crypto"].includes(method)) { res.status(400).json({ message: "Invalid method" }); return; }
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!user) { res.status(404).json({ message: "User not found" }); return; }
@@ -377,7 +146,7 @@ router.post("/payments/withdraw", async (req: Request, res: Response) => {
   const txId = `tx_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const fundLabel = method === "crypto"
     ? `Crypto (${(cryptoNetwork ?? user.cryptoWithdrawNetwork) ?? "Unknown"})`
-    : method === "paystack" ? "Paystack" : `Bank (${(bankName ?? user.bankName) ?? "Unknown"})`;
+    : `Bank (${(bankName ?? user.bankName) ?? "Unknown"})`;
 
   await db.insert(transactionsTable).values({
     id: txId, userId, type: "Withdrawal", fund: fundLabel,

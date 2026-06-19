@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { X, Loader2, AlertCircle, Building2, Bitcoin, CheckCircle2, CreditCard } from 'lucide-react';
+import { X, Loader2, AlertCircle, Building2, Bitcoin, CheckCircle2 } from 'lucide-react';
 
 interface WithdrawModalProps {
   liquidity: number;
@@ -7,11 +7,10 @@ interface WithdrawModalProps {
   onSuccess: (newLiquidity: number) => void;
 }
 
-type Method = 'bank' | 'crypto' | 'paystack';
+type Method = 'bank' | 'crypto';
 
 const ALL_METHODS: { id: Method; label: string; icon: React.ReactNode; settingKey: string }[] = [
   { id: 'bank', label: 'Bank Transfer', icon: <Building2 className="w-3.5 h-3.5" />, settingKey: 'withdraw_bank_enabled' },
-  { id: 'paystack', label: 'Paystack', icon: <CreditCard className="w-3.5 h-3.5" />, settingKey: 'withdraw_paystack_enabled' },
   { id: 'crypto', label: 'Crypto', icon: <Bitcoin className="w-3.5 h-3.5" />, settingKey: 'withdraw_crypto_enabled' },
 ];
 
@@ -181,12 +180,12 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
                 <>
                   <div>
                     <label className="block text-brand-muted font-sans text-xs mb-1">Bank Name</label>
-                    <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="e.g. Zenith Bank"
+                    <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="e.g. Chase Bank"
                       className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60" />
                   </div>
                   <div>
                     <label className="block text-brand-muted font-sans text-xs mb-1">Account Number</label>
-                    <input type="text" value={bankAccountNumber} onChange={e => setBankAccountNumber(e.target.value)} placeholder="10-digit account number"
+                    <input type="text" value={bankAccountNumber} onChange={e => setBankAccountNumber(e.target.value)} placeholder="Account number"
                       className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60" />
                   </div>
                   <div>
@@ -195,13 +194,6 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
                       className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60" />
                   </div>
                 </>
-              )}
-
-              {/* Paystack note */}
-              {method === 'paystack' && (
-                <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-3 text-xs font-sans text-brand-muted">
-                  Paystack will process your withdrawal to your registered Nigerian bank account. Admin will initiate the transfer on your behalf.
-                </div>
               )}
 
               {/* Crypto fields */}

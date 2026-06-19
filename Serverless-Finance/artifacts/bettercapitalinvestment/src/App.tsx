@@ -7,6 +7,7 @@ import DashboardView from "./components/DashboardView";
 import OTPVerifyView from "./components/OTPVerifyView";
 import ForgotPasswordView from "./components/ForgotPasswordView";
 import AdminDashboard from "./components/AdminDashboard";
+import PendingView from "./components/PendingView";
 import CookieConsent from "./components/CookieConsent";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { PlatformProvider } from "./context/PlatformContext";
@@ -224,7 +225,9 @@ function AppInner() {
   };
 
   const handleSignupSuccess = (emailOrUser: string | SignupUser) => {
-    if (typeof emailOrUser === "string") {
+    if (emailOrUser === "pending") {
+      handleNavigate("pending");
+    } else if (typeof emailOrUser === "string") {
       // Email service active — go to OTP verification screen
       setVerifyEmail(emailOrUser);
       handleNavigate("verify-email");
@@ -318,6 +321,13 @@ function AppInner() {
             onNavigate={handleNavigate}
             onSignupSuccess={handleSignupSuccess}
           />
+          {GlobalErrorBanner}
+        </>
+      );
+    case "pending":
+      return (
+        <>
+          <PendingView onNavigate={handleNavigate} />
           {GlobalErrorBanner}
         </>
       );

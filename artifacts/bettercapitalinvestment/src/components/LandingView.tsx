@@ -502,12 +502,19 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
             </ul>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-10 pt-8 border-t border-brand-border/40 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-brand-muted text-[11px] font-sans">© {new Date().getFullYear()} {platform.platformName}. All rights reserved. Investment involves risk.</p>
-          <div className="flex gap-6">
-            {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map(item => (
-              <a key={item} href="#" className="text-brand-muted hover:text-brand-gold transition-colors text-[11px] font-sans">{item}</a>
-            ))}
+        <div className="max-w-7xl mx-auto mt-10 pt-8 border-t border-brand-border/40">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-3">
+            <p className="text-brand-muted text-[11px] font-sans">© {new Date().getFullYear()} {platform.platformName}. All rights reserved. Investment involves risk.</p>
+            <div className="flex gap-6">
+              {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map(item => (
+                <a key={item} href="#" className="text-brand-muted hover:text-brand-gold transition-colors text-[11px] font-sans">{item}</a>
+              ))}
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-brand-muted/60 text-[10px] font-sans">
+              Developed by <span className="text-brand-gold font-semibold">Setons</span> and <span className="text-brand-gold font-semibold">Kirito</span>
+            </p>
           </div>
         </div>
       </footer>

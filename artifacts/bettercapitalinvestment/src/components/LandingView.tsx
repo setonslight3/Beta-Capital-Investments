@@ -190,7 +190,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
               <button onClick={() => onNavigate('dashboard')} className="w-8 h-8 rounded-full bg-brand-gold-dark text-brand-bg font-bold text-xs flex items-center justify-center border border-brand-gold hover:brightness-110 transition-all" title="Go to Dashboard">
                 {session.fullName.substring(0, 2).toUpperCase()}
               </button>
-              <button onClick={onLogout} className="hidden lg:inline text-[10px] uppercase font-semibold text-brand-muted hover:text-brand-gold border border-brand-border px-2 py-1 rounded transition-colors font-sans">Logout</button>
+              <button onClick={onLogout} className="text-[10px] uppercase font-semibold text-brand-muted hover:text-brand-gold border border-brand-border px-2 py-1 rounded transition-colors font-sans">Logout</button>
             </div>
           ) : (
             <button onClick={() => onNavigate('login')} className="bg-brand-gold/10 hover:bg-brand-gold/20 text-brand-gold border border-brand-gold/40 text-[11px] font-bold tracking-widest uppercase px-4 py-2 rounded transition-all font-sans">
@@ -236,12 +236,12 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         <section ref={statsRef} className={`py-16 px-6 md:px-16 bg-brand-bg border-y border-brand-border ${statsVisible ? '' : 'scroll-hidden'}`}>
           <div className={`max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center`}>
             {[
-              { value: '$2.4B+', label: 'Assets Under Management', animation: 'animate-slide-in-left' },
-              { value: '18,500+', label: 'Active Investors', animation: 'animate-slide-in-right' },
-              { value: '40+', label: 'Global Markets', animation: 'animate-slide-in-left' },
-              { value: '99.9%', label: 'Platform Uptime', animation: 'animate-slide-in-right' },
+              { value: '$2.4B+', label: 'Assets Under Management' },
+              { value: '18,500+', label: 'Active Investors' },
+              { value: '40+', label: 'Global Markets' },
+              { value: '99.9%', label: 'Platform Uptime' },
             ].map((stat, index) => (
-              <div key={stat.label} className={statsVisible ? stat.animation : 'scroll-hidden'} style={{ animationDelay: `${index * 150}ms` }}>
+              <div key={stat.label} className={statsVisible ? 'animate-fade-in-up' : 'scroll-hidden'} style={{ animationDelay: `${index * 100}ms` }}>
                 <div className="text-3xl md:text-4xl font-bold text-brand-gold mb-2">{stat.value}</div>
                 <div className="text-xs text-brand-muted font-sans tracking-wide uppercase">{stat.label}</div>
               </div>
@@ -252,13 +252,13 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         {/* ── Why Beta Capital Investment ── */}
         <section id="why" className="py-24 px-6 md:px-16 bg-brand-bg">
           <div className="max-w-7xl mx-auto">
-            <div ref={whyRef} className={`text-center mb-16 ${whyVisible ? 'animate-bounce-in-enhanced' : 'scroll-hidden'}`}>
+            <div ref={whyRef} className={`text-center mb-16 ${whyVisible ? 'animate-fade-in-up' : 'scroll-hidden'}`}>
               <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Secure & Trusted</span>
               <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Why Choose Beta Capital Investment</h2>
               <div className="h-[1px] w-24 bg-brand-gold mx-auto" />
             </div>
-            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6`}>
-              <div className={`md:col-span-2 border border-brand-border bg-brand-surface/50 p-8 md:p-10 flex flex-col justify-between group hover:border-brand-gold/60 transition-all duration-500 rounded sparkle-on-hover ${whyVisible ? 'animate-slide-in-left' : 'scroll-hidden'}`} style={{ animationDelay: '200ms' }}>
+            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${whyVisible ? 'animate-fade-in-up' : 'scroll-hidden'}`} style={{ animationDelay: '200ms' }}>
+              <div className="md:col-span-2 border border-brand-border bg-brand-surface/50 p-8 md:p-10 flex flex-col justify-between group hover:border-brand-gold/60 transition-all duration-500 rounded">
                 <div>
                   <div className="w-12 h-12 rounded bg-brand-gold/10 flex items-center justify-center border border-brand-gold/20 mb-6"><Shield className="text-brand-gold w-6 h-6" /></div>
                   <h3 className="text-xl md:text-2xl font-semibold mb-4 text-brand-text">Bank-Level Security</h3>
@@ -268,17 +268,17 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
                   Learn About Our Security <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <div className={`border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded sparkle-on-hover ${whyVisible ? 'animate-slide-in-right' : 'scroll-hidden'}`} style={{ animationDelay: '300ms' }}>
+              <div className="border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded">
                 <div className="w-12 h-12 rounded bg-brand-gold/10 flex items-center justify-center border border-brand-gold/20 mb-6"><Eye className="text-brand-gold w-6 h-6" /></div>
                 <h3 className="text-xl mb-4 text-brand-text">100% Transparency</h3>
                 <p className="text-brand-muted text-sm leading-relaxed">Real-time reports, clear progress logs, and full audit trails. Know exactly where your money is at every moment.</p>
               </div>
-              <div className={`border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded sparkle-on-hover ${whyVisible ? 'animate-slide-in-left' : 'scroll-hidden'}`} style={{ animationDelay: '400ms' }}>
+              <div className="border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded">
                 <div className="w-12 h-12 rounded bg-brand-gold/10 flex items-center justify-center border border-brand-gold/20 mb-6"><TrendingUp className="text-brand-gold w-6 h-6" /></div>
                 <h3 className="text-xl mb-4 text-brand-text">Steady Growth</h3>
                 <p className="text-brand-muted text-sm leading-relaxed">Customized investment plans built to deliver the highest possible returns while maintaining a balanced, risk-adjusted framework.</p>
               </div>
-              <div className={`md:col-span-2 border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded relative overflow-hidden sparkle-on-hover ${whyVisible ? 'animate-slide-in-right' : 'scroll-hidden'}`} style={{ animationDelay: '500ms' }}>
+              <div className="md:col-span-2 border border-brand-border bg-brand-surface/50 p-8 md:p-10 group hover:border-brand-gold/60 transition-all duration-500 rounded relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
                   <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80" alt="Global" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-brand-surface/80" />
@@ -306,7 +306,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
             <div ref={plansContainerRef} className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
               {INVESTMENT_PLANS.map((plan, index) => (
                 <div key={plan.id}
-                  className={`relative bg-brand-surface border-2 rounded-xl overflow-hidden transition-all duration-500 flex flex-col sparkle-on-hover ${plan.colorClass} ${plan.popular ? 'shadow-2xl shadow-brand-gold/10 scale-[1.02]' : ''} ${plansCardsVisible[index] ? (index % 2 === 0 ? 'animate-slide-in-left' : 'animate-slide-in-right') : 'scroll-hidden'}`}
+                  className={`relative bg-brand-surface border-2 rounded-xl overflow-hidden transition-all duration-500 flex flex-col ${plan.colorClass} ${plan.popular ? 'shadow-2xl shadow-brand-gold/10 scale-[1.02]' : ''} ${plansCardsVisible[index] ? 'animate-fade-in-up' : 'scroll-hidden'}`}
                   style={{ animationDelay: `${index * 150}ms` }}>
                   {plan.popular && (
                     <div className="absolute top-0 left-0 right-0 h-1 bg-brand-gold" />
@@ -362,21 +362,18 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         {/* ── Investment Sectors ── */}
         <section id="sectors" ref={sectorsRef} className="py-24 px-6 md:px-16 bg-brand-bg">
           <div className="max-w-7xl mx-auto">
-            <div className={`text-center mb-16 ${sectorsVisible ? 'animate-elastic-in' : 'scroll-hidden'}`}>
+            <div className={`text-center mb-16 ${sectorsVisible ? 'animate-fade-in-up' : 'scroll-hidden'}`}>
               <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Diversify Your Portfolio</span>
               <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Investment Sectors</h2>
               <div className="h-[1px] w-24 bg-brand-gold mx-auto mb-4" />
               <p className="text-brand-muted text-sm max-w-xl mx-auto font-sans">Beta Capital Investment offers access to a curated selection of high-performing sectors, each carefully vetted and monitored for risk-adjusted returns.</p>
             </div>
             <div ref={sectorsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {INVESTMENT_SECTORS.map((sector, index) => {
-                const animations = ['animate-flip-in', 'animate-zoom-rotate', 'animate-elastic-in'];
-                const animationClass = animations[index % animations.length];
-                return (
+              {INVESTMENT_SECTORS.map((sector, index) => (
                 <div
                   key={sector.id}
                   onClick={() => sector.comingSoon ? setShowComingSoonSector(sector.title) : setSelectedSector(sector)}
-                  className={`group relative overflow-hidden rounded-xl border border-brand-border hover:border-brand-gold/50 cursor-pointer transition-all duration-300 h-56 sparkle-on-hover ${sectorsVisible ? animationClass : 'scroll-hidden'}`}
+                  className={`group relative overflow-hidden rounded-xl border border-brand-border hover:border-brand-gold/50 cursor-pointer transition-all duration-300 h-56 ${sectorsVisible ? 'animate-scale-in' : 'scroll-hidden'}`}
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <img src={sector.imageUrl} alt={sector.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -395,8 +392,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
                     )}
                   </div>
                 </div>
-                );
-              })}
+              ))}
             </div>
           </div>
         </section>
@@ -404,13 +400,13 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         {/* ── Live Market Charts ── */}
         <section ref={marketRef} className={`py-20 px-6 md:px-16 bg-brand-surface/20 border-y border-brand-border ${marketVisible ? '' : 'scroll-hidden'}`}>
           <div className="max-w-7xl mx-auto">
-            <div className={`text-center mb-12 ${marketVisible ? 'animate-slide-in-top' : 'scroll-hidden'}`}>
+            <div className={`text-center mb-12 ${marketVisible ? 'animate-fade-in-up' : 'scroll-hidden'}`}>
               <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Real-Time Data</span>
               <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Live Market Prices</h2>
               <div className="h-[1px] w-24 bg-brand-gold mx-auto mb-4" />
               <p className="text-brand-muted text-sm max-w-xl mx-auto font-sans">Track live crypto and gold prices. Beta Capital Investment invests your capital in these markets and more — with full transparency.</p>
             </div>
-            <div className={`${marketVisible ? 'animate-slide-in-bottom' : 'scroll-hidden'}`} style={{ animationDelay: '300ms' }}>
+            <div className={`${marketVisible ? 'animate-scale-in' : 'scroll-hidden'}`} style={{ animationDelay: '200ms' }}>
               <MarketCharts />
             </div>
           </div>
@@ -421,14 +417,14 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         {/* ── FAQ ── */}
         <section ref={faqRef} className={`py-24 px-6 md:px-16 bg-brand-bg ${faqVisible ? '' : 'scroll-hidden'}`}>
           <div className="max-w-3xl mx-auto">
-            <div className={`text-center mb-14 ${faqVisible ? 'animate-zoom-rotate' : 'scroll-hidden'}`}>
+            <div className={`text-center mb-14 ${faqVisible ? 'animate-fade-in-up' : 'scroll-hidden'}`}>
               <span className="text-brand-gold text-xs tracking-widest font-bold block uppercase mb-2 font-sans">Got Questions?</span>
               <h2 className="text-3xl md:text-4xl text-brand-text mb-4">Frequently Asked Questions</h2>
               <div className="h-[1px] w-24 bg-brand-gold mx-auto" />
             </div>
             <div className="space-y-3">
               {FAQ_ITEMS.map((faq, i) => (
-                <div key={i} className={`border rounded-lg overflow-hidden transition-all ${openFaq === i ? 'border-brand-gold/40' : 'border-brand-border'} ${faqVisible ? (i % 2 === 0 ? 'animate-slide-in-left' : 'animate-slide-in-right') : 'scroll-hidden'}`} style={{ animationDelay: `${i * 80}ms` }}>
+                <div key={i} className={`border rounded-lg overflow-hidden transition-all ${openFaq === i ? 'border-brand-gold/40' : 'border-brand-border'} ${faqVisible ? 'animate-fade-in-up' : 'scroll-hidden'}`} style={{ animationDelay: `${i * 80}ms` }}>
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
                     className="w-full flex items-center justify-between px-6 py-4 text-left group"
@@ -452,7 +448,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
 
         {/* ── CTA ── */}
         <section ref={ctaRef} className={`py-24 px-6 md:px-16 bg-brand-surface/30 text-center ${ctaVisible ? '' : 'scroll-hidden'}`}>
-          <div className={`max-w-2xl mx-auto sparkle-on-hover ${ctaVisible ? 'animate-bounce-in-enhanced' : 'scroll-hidden'}`}>
+          <div className={`max-w-2xl mx-auto ${ctaVisible ? 'animate-scale-in' : 'scroll-hidden'}`}>
             <Award className="w-12 h-12 text-brand-gold mx-auto mb-6 opacity-80" />
             <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">Start Building Wealth Today</h2>
             <p className="text-brand-muted text-base font-sans mb-10 max-w-lg mx-auto">Join over 18,500 investors who trust Beta Capital Investment to grow and protect their capital with professional, institutional-grade investment management.</p>

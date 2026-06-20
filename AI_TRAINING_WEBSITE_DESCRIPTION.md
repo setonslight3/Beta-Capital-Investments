@@ -256,6 +256,8 @@ Five structured investment tiers designed to accommodate different investment le
 - Binance Coin (BNB)
 - Solana (SOL)
 - Ripple (XRP)
+
+wiu:dnd werety{}ddnd"
 - And more...
 
 **Data Source:** CoinGecko API  

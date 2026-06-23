@@ -6,7 +6,7 @@
   "installCommand": "pnpm install --no-frozen-lockfile",
   "regions": ["iad1"],
   "functions": {
-    "api/**/*.js": {
+    "api/**/*.ts": {
       "maxDuration": 30,
       "memory": 1024
     }

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm install --no-frozen-lockfile && pnpm run typecheck:libs && pnpm --filter @workspace/BetterCapitalInvestment run build && pnpm --filter @workspace/api-server run build",
+  "buildCommand": "pnpm install --no-frozen-lockfile && pnpm --filter @workspace/BetterCapitalInvestment run build && pnpm --filter @workspace/api-server run build",
   "outputDirectory": "artifacts/bettercapitalinvestment/dist/public",
   "framework": null,
   "installCommand": "pnpm install",

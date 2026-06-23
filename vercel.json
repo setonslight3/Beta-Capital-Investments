@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm run build:vercel",
+  "buildCommand": "pnpm --filter @workspace/BetterCapitalInvestment run build && pnpm --filter @workspace/api-server run build",
   "outputDirectory": "public",
   "framework": null,
   "installCommand": "pnpm install --no-frozen-lockfile",

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm install --no-frozen-lockfile && pnpm --filter @workspace/BetterCapitalInvestment run build && pnpm --filter @workspace/api-server run build",
+  "buildCommand": "pnpm install --no-frozen-lockfile && echo 'Building frontend...' && pnpm --filter @workspace/BetterCapitalInvestment run build && echo 'Checking for public directory...' && ls -la . && find . -name 'public' -type d && pnpm --filter @workspace/api-server run build",
   "outputDirectory": "public",
   "framework": null,
   "installCommand": "pnpm install --no-frozen-lockfile",

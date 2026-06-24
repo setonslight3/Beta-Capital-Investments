@@ -143,6 +143,7 @@ router.get("/admin/users", requireAdmin, async (_req: Request, res: Response) =>
   res.json(users.map((u) => ({
     id: u.id, email: u.email, fullName: u.fullName, tier: u.tier,
     isAdmin: u.isAdmin, emailVerified: u.emailVerified,
+    adminVerified: u.adminVerified, phoneNumber: u.phoneNumber,
     liquidity: u.liquidity, theme: u.theme, createdAt: u.createdAt,
     googleId: !!u.googleId,
     bankName: u.bankName, bankAccountNumber: u.bankAccountNumber,
@@ -154,23 +155,41 @@ router.get("/admin/users", requireAdmin, async (_req: Request, res: Response) =>
 
 router.patch("/admin/users/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const { tier, isAdmin, emailVerified, liquidity, fullName } = req.body;
+  const { tier, isAdmin, emailVerified, adminVerified, liquidity, fullName } = req.body;
   const updates: Partial<typeof usersTable.$inferInsert> = {};
   if (tier !== undefined) updates.tier = tier;
   if (isAdmin !== undefined) updates.isAdmin = isAdmin;
   if (emailVerified !== undefined) updates.emailVerified = emailVerified;
+  if (adminVerified !== undefined) updates.adminVerified = adminVerified;
   if (liquidity !== undefined) updates.liquidity = liquidity;
   if (fullName !== undefined) updates.fullName = fullName;
 
   const [user] = await db.update(usersTable).set(updates).where(eq(usersTable.id, id)).returning();
   if (!user) { res.status(404).json({ message: "User not found" }); return; }
-  res.json({ id: user.id, email: user.email, fullName: user.fullName, tier: user.tier, isAdmin: user.isAdmin, liquidity: user.liquidity, emailVerified: user.emailVerified });
+  res.json({ id: user.id, email: user.email, fullName: user.fullName, tier: user.tier, isAdmin: user.isAdmin, liquidity: user.liquidity, emailVerified: user.emailVerified, adminVerified: user.adminVerified });
 });
 
 router.delete("/admin/users/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = Number(req.params.id);
   await db.delete(usersTable).where(eq(usersTable.id, id));
   res.json({ message: "User deleted" });
+});
+
+router.post("/admin/users/:id/verify", requireAdmin, async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+  const [user] = await db.update(usersTable)
+    .set({ adminVerified: true })
+    .where(eq(usersTable.id, id))
+    .returning();
+  if (!user) { res.status(404).json({ message: "User not found" }); return; }
+  // Send approval email
+  try {
+    const { sendAccountApprovedEmail } = await import("./auth");
+    await sendAccountApprovedEmail(user);
+  } catch (err) {
+    console.error("Failed to send approval email:", err);
+  }
+  res.json({ message: "User verified", userId: user.id });
 });
 
 // ─── INVESTMENTS ───────────────────────────────────────────────────────────────

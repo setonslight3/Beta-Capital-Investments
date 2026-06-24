@@ -464,15 +464,21 @@ router.post("/payments/crypto/submit", async (req: Request, res: Response) => {
   const userId = requireAuth(req, res);
   if (!userId) return;
 
-  const { amount, network, txHash } = req.body;
-  if (!amount || !network || !txHash) {
-    res.status(400).json({ message: "amount, network, and txHash required" });
+  const { amount, network, proofImageBase64, proofImageName, txHash } = req.body;
+  if (!amount || !network) {
+    res.status(400).json({ message: "amount and network are required" });
+    return;
+  }
+  if (!proofImageBase64 && !txHash) {
+    res.status(400).json({ message: "Please upload proof of payment" });
     return;
   }
 
   const payId = genId();
   await db.insert(paymentsTable).values({
-    id: payId, userId, provider: "crypto", txHash,
+    id: payId, userId, provider: "crypto",
+    txHash: txHash ?? proofImageName ?? null,
+    proofImageBase64: proofImageBase64 ?? null,
     amount, currency: "USD", status: "manual_review",
     metadata: JSON.stringify({ network }),
   });

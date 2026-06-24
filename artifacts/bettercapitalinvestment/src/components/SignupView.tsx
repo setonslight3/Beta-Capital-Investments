@@ -1,28 +1,38 @@
-﻿import { useState, FormEvent } from 'react';
-import { Lock, Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { useState, FormEvent, useRef } from 'react';
+import { Lock, Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2, Phone, Upload, FileText, X } from 'lucide-react';
 import { ScreenType } from '../types';
 import LogoIcon from './LogoIcon';
-import { useSignup } from '@workspace/api-client-react';
 import LegalModal from './LegalModal';
 
 type SignupUser = { email: string; fullName: string; tier: string; theme: string; biometricEnabled: boolean; isAdmin?: boolean; emailVerified?: boolean };
 
 interface SignupViewProps {
   onNavigate: (screen: ScreenType) => void;
-  onSignupSuccess: (emailOrUser: string | SignupUser) => void;
+  onSignupSuccess: (emailOrUser: string | SignupUser | { pending: true; email: string }) => void;
 }
+
+const DOC_TYPES = [
+  { value: 'passport', label: 'Passport' },
+  { value: 'national_id', label: 'National ID Card' },
+  { value: 'drivers_license', label: "Driver's License" },
+  { value: 'utility_bill', label: 'Utility Bill' },
+];
 
 export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [errorText, setErrorText] = useState('');
+  const [loading, setLoading] = useState(false);
   const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
-
-  const signupMutation = useSignup();
+  const [kycDocType, setKycDocType] = useState('passport');
+  const [kycFile, setKycFile] = useState<File | null>(null);
+  const [kycFileBase64, setKycFileBase64] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const passwordStrength = () => {
     if (!password) return { label: '', color: '', width: '0%' };
@@ -39,43 +49,71 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
     setLegalModal(type);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorText('File size must be under 5MB.');
+      return;
+    }
+    setKycFile(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      setKycFileBase64(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorText('');
     if (!fullName.trim()) { setErrorText('Please enter your full name.'); return; }
     if (!email.trim()) { setErrorText('Please enter your email address.'); return; }
+    if (!phone.trim()) { setErrorText('Please enter your phone number.'); return; }
     if (!password) { setErrorText('Please create a password.'); return; }
     if (password.length < 8) { setErrorText('Password must be at least 8 characters.'); return; }
     if (password !== confirmPassword) { setErrorText('Passwords do not match.'); return; }
+    if (!kycFile || !kycFileBase64) { setErrorText('Please upload a KYC identification document.'); return; }
     if (!agreed) { setErrorText('Please agree to the terms and conditions.'); return; }
 
-    signupMutation.mutate(
-      { data: { email, password, fullName } },
-      {
-        onSuccess: (data) => {
-          const user = data as SignupUser;
-          if (user.emailVerified) {
-            // Auto-verified (no email service configured) — go directly to dashboard
-            onSignupSuccess(user);
-          } else {
-            // Email service is active — go through OTP verification
-            onSignupSuccess(email);
-          }
-        },
-        onError: (err: unknown) => {
-          const anyErr = err as { response?: { data?: { message?: string } } };
-          if (anyErr?.response?.data?.message?.includes('already')) {
-            setErrorText('An account with this email already exists. Please sign in.');
-          } else {
-            setErrorText('Failed to create account. Please try again.');
-          }
-        },
+    setLoading(true);
+    try {
+      const r = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          fullName,
+          phoneNumber: phone,
+          kycDocBase64: kycFileBase64,
+          kycDocName: kycFile.name,
+          kycDocType,
+        }),
+        credentials: 'include',
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        if (data.message?.includes('already')) {
+          setErrorText('An account with this email already exists. Please sign in.');
+        } else {
+          setErrorText(data.message ?? 'Failed to create account. Please try again.');
+        }
+        setLoading(false);
+        return;
       }
-    );
-  };
 
-  const handleGoogleSignup = async () => {
-    // Google OAuth removed as per requirements
+      if (data.pending) {
+        onSignupSuccess({ pending: true, email: data.email });
+      } else {
+        // Admin user — logged in immediately
+        onSignupSuccess(data as SignupUser);
+      }
+    } catch {
+      setErrorText('Network error. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -93,7 +131,7 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 pt-20 pb-8">
-        <div className="w-full max-w-sm sm:max-w-[480px]">
+        <div className="w-full max-w-sm sm:max-w-[520px]">
           <div className="bg-brand-surface border border-brand-border rounded-lg shadow-2xl overflow-hidden">
             <div className="h-[3px] bg-brand-gold" />
             <div className="p-6 sm:p-8 md:p-10">
@@ -109,6 +147,7 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
               )}
 
               <form className="space-y-4" onSubmit={handleSubmit}>
+                {/* Full Name */}
                 <div className="space-y-1">
                   <label className="block text-[11px] font-sans font-semibold text-brand-muted uppercase tracking-wider">Full Name</label>
                   <input
@@ -121,6 +160,7 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
                   />
                 </div>
 
+                {/* Email */}
                 <div className="space-y-1">
                   <label className="block text-[11px] font-sans font-semibold text-brand-muted uppercase tracking-wider">Email Address</label>
                   <input
@@ -133,6 +173,23 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
                   />
                 </div>
 
+                {/* Phone Number */}
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-sans font-semibold text-brand-muted uppercase tracking-wider">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
+                    <input
+                      type="tel"
+                      placeholder="+1 (555) 000-0000"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      autoComplete="tel"
+                      className="w-full bg-brand-bg border border-brand-border py-3 pl-10 pr-4 text-brand-text placeholder-brand-muted/30 focus:border-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold/20 rounded-lg transition-all font-sans"
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
                 <div className="space-y-1">
                   <label className="block text-[11px] font-sans font-semibold text-brand-muted uppercase tracking-wider">Password</label>
                   <div className="relative">
@@ -158,6 +215,7 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
                   )}
                 </div>
 
+                {/* Confirm Password */}
                 <div className="space-y-1">
                   <label className="block text-[11px] font-sans font-semibold text-brand-muted uppercase tracking-wider">Confirm Password</label>
                   <div className="relative">
@@ -173,6 +231,49 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
                       <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-400" />
                     )}
                   </div>
+                </div>
+
+                {/* KYC Document Upload */}
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-sans font-semibold text-brand-muted uppercase tracking-wider">Identity Document (KYC)</label>
+                  <select
+                    value={kycDocType}
+                    onChange={e => setKycDocType(e.target.value)}
+                    className="w-full bg-brand-bg border border-brand-border py-2.5 px-3 text-brand-text text-sm focus:border-brand-gold focus:outline-none rounded-lg transition-all font-sans"
+                  >
+                    {DOC_TYPES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                  </select>
+
+                  {kycFile ? (
+                    <div className="flex items-center gap-3 bg-brand-bg border border-brand-gold/30 rounded-lg px-3 py-2.5">
+                      <FileText className="w-4 h-4 text-brand-gold shrink-0" />
+                      <span className="text-xs font-sans text-brand-text flex-1 truncate">{kycFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => { setKycFile(null); setKycFileBase64(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                        className="text-brand-muted hover:text-red-400 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full border border-dashed border-brand-border rounded-lg py-4 px-3 flex flex-col items-center gap-2 hover:border-brand-gold/50 hover:bg-brand-gold/5 transition-all"
+                    >
+                      <Upload className="w-5 h-5 text-brand-muted" />
+                      <span className="text-xs font-sans text-brand-muted">Click to upload document</span>
+                      <span className="text-[10px] font-sans text-brand-muted/60">JPG, PNG or PDF · Max 5MB</span>
+                    </button>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/jpg,application/pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
                 </div>
 
                 {/* Terms checkbox */}
@@ -208,10 +309,10 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
                 <div className="pt-1">
                   <button
                     type="submit"
-                    disabled={signupMutation.isPending}
+                    disabled={loading}
                     className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3.5 rounded-lg hover:brightness-110 active:scale-[0.98] transition-all tracking-widest uppercase flex items-center justify-center gap-2 disabled:opacity-70 shadow-lg shadow-brand-gold/10"
                   >
-                    {signupMutation.isPending ? <><Loader2 className="animate-spin w-4 h-4" /><span>Creating Account...</span></> : <><Lock className="w-3.5 h-3.5" /><span>Create Account</span></>}
+                    {loading ? <><Loader2 className="animate-spin w-4 h-4" /><span>Creating Account...</span></> : <><Lock className="w-3.5 h-3.5" /><span>Create Account</span></>}
                   </button>
                 </div>
               </form>

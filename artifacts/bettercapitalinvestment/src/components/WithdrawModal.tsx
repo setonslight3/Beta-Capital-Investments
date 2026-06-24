@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { X, Loader2, AlertCircle, Building2, Bitcoin, CheckCircle2, CreditCard } from 'lucide-react';
+import { X, Loader2, AlertCircle, Building2, Bitcoin, CheckCircle2, Copy, Info } from 'lucide-react';
 
 interface WithdrawModalProps {
   liquidity: number;
@@ -7,11 +7,10 @@ interface WithdrawModalProps {
   onSuccess: (newLiquidity: number) => void;
 }
 
-type Method = 'bank' | 'crypto' | 'paystack';
+type Method = 'bank' | 'crypto';
 
 const ALL_METHODS: { id: Method; label: string; icon: React.ReactNode; settingKey: string }[] = [
   { id: 'bank', label: 'Bank Transfer', icon: <Building2 className="w-3.5 h-3.5" />, settingKey: 'withdraw_bank_enabled' },
-  { id: 'paystack', label: 'Paystack', icon: <CreditCard className="w-3.5 h-3.5" />, settingKey: 'withdraw_paystack_enabled' },
   { id: 'crypto', label: 'Crypto', icon: <Bitcoin className="w-3.5 h-3.5" />, settingKey: 'withdraw_crypto_enabled' },
 ];
 
@@ -21,7 +20,7 @@ const fmt = (n: number) =>
 export default function WithdrawModal({ liquidity, onClose, onSuccess }: WithdrawModalProps) {
   const [methodSettings, setMethodSettings] = useState<Record<string, string>>({});
   const [settingsLoaded, setSettingsLoaded] = useState(false);
-  const [method, setMethod] = useState<Method | null>(null);
+  const [method, setMethod] = useState<Method>('bank');
   const [amount, setAmount] = useState('');
   const [bankName, setBankName] = useState('');
   const [bankAccountNumber, setBankAccountNumber] = useState('');
@@ -32,24 +31,22 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [newBalance, setNewBalance] = useState(0);
+  const [copied, setCopied] = useState('');
 
   useEffect(() => {
     fetch('/api/settings')
       .then(r => r.json())
-      .then(d => {
-        setMethodSettings(d ?? {});
-        setSettingsLoaded(true);
-      })
+      .then(d => { setMethodSettings(d ?? {}); setSettingsLoaded(true); })
       .catch(() => setSettingsLoaded(true));
   }, []);
 
   const enabledMethods = ALL_METHODS.filter(m => methodSettings[m.settingKey] !== 'false');
 
   useEffect(() => {
-    if (settingsLoaded && enabledMethods.length > 0 && method === null) {
+    if (settingsLoaded && enabledMethods.length > 0) {
       setMethod(enabledMethods[0].id);
     }
-  }, [settingsLoaded, enabledMethods.length]);
+  }, [settingsLoaded]);
 
   const parseAmount = () => {
     const n = parseFloat(amount);
@@ -107,7 +104,7 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
         <div className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-md shadow-2xl p-8 text-center" onClick={e => e.stopPropagation()}>
           <AlertCircle className="w-10 h-10 text-yellow-400 mx-auto mb-3" />
           <p className="text-brand-text font-serif font-bold text-lg mb-2">Withdrawals Unavailable</p>
-          <p className="text-brand-muted font-sans text-sm mb-5">All withdrawal methods are currently disabled. Please contact support.</p>
+          <p className="text-brand-muted font-sans text-sm mb-5">Withdrawal methods are currently disabled. Please contact support.</p>
           <button onClick={onClose} className="bg-brand-gold text-brand-bg font-sans font-bold text-xs px-6 py-2.5 rounded uppercase tracking-widest hover:brightness-110 transition-all">Close</button>
         </div>
       </div>
@@ -138,7 +135,7 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
           </div>
         ) : (
           <div className="p-5">
-            {/* Method selector — only enabled methods */}
+            {/* Method selector */}
             <div className="flex gap-1.5 mb-4">
               {enabledMethods.map(m => (
                 <button
@@ -153,6 +150,14 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
                   {m.icon} {m.label}
                 </button>
               ))}
+            </div>
+
+            {/* 30-day notice */}
+            <div className="flex items-start gap-2 bg-brand-bg border border-brand-border/60 rounded-lg p-3 mb-4">
+              <Info className="w-3.5 h-3.5 text-brand-gold shrink-0 mt-0.5" />
+              <p className="text-[10px] font-sans text-brand-muted leading-relaxed">
+                <span className="text-brand-gold font-bold">30-Day Minimum:</span> Active investments require a minimum 30-day hold period. Only your available liquidity balance can be withdrawn.
+              </p>
             </div>
 
             {error && (
@@ -181,13 +186,20 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
                 <>
                   <div>
                     <label className="block text-brand-muted font-sans text-xs mb-1">Bank Name</label>
-                    <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="e.g. Zenith Bank"
+                    <input type="text" value={bankName} onChange={e => setBankName(e.target.value)} placeholder="e.g. Chase Bank"
                       className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60" />
                   </div>
                   <div>
                     <label className="block text-brand-muted font-sans text-xs mb-1">Account Number</label>
-                    <input type="text" value={bankAccountNumber} onChange={e => setBankAccountNumber(e.target.value)} placeholder="10-digit account number"
-                      className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60" />
+                    <div className="relative">
+                      <input type="text" value={bankAccountNumber} onChange={e => setBankAccountNumber(e.target.value)} placeholder="Account number"
+                        className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 pr-10 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60" />
+                      {bankAccountNumber && (
+                        <button type="button" onClick={() => { navigator.clipboard.writeText(bankAccountNumber); setCopied('acc'); setTimeout(() => setCopied(''), 2000); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-gold transition-colors">
+                          {copied === 'acc' ? <CheckCircle2 className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="block text-brand-muted font-sans text-xs mb-1">Account Name</label>
@@ -195,13 +207,6 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
                       className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60" />
                   </div>
                 </>
-              )}
-
-              {/* Paystack note */}
-              {method === 'paystack' && (
-                <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-3 text-xs font-sans text-brand-muted">
-                  Paystack will process your withdrawal to your registered Nigerian bank account. Admin will initiate the transfer on your behalf.
-                </div>
               )}
 
               {/* Crypto fields */}
@@ -215,24 +220,19 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
                     </select>
                   </div>
                   <div>
-                    <label className="block text-brand-muted font-sans text-xs mb-1">Your Wallet Address</label>
-                    <input type="text" value={cryptoAddress} onChange={e => setCryptoAddress(e.target.value)} placeholder="Paste your wallet address"
-                      className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-mono text-xs focus:outline-none focus:border-brand-gold/60" />
+                    <label className="block text-brand-muted font-sans text-xs mb-1">Wallet Address</label>
+                    <input type="text" value={cryptoAddress} onChange={e => setCryptoAddress(e.target.value)} placeholder={`Your ${cryptoNetwork} address`}
+                      className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-mono text-sm focus:outline-none focus:border-brand-gold/60" />
                   </div>
                 </>
               )}
 
-              <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-2.5">
-                <p className="text-yellow-400 font-sans text-xs">Withdrawals are subject to admin review (1–3 business days). Funds are deducted from your balance immediately pending approval.</p>
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-red-600 text-white font-sans font-bold py-2.5 rounded-lg hover:brightness-110 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-sans font-bold text-xs py-3 rounded uppercase tracking-widest transition-all disabled:opacity-60 flex items-center justify-center gap-2"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                {loading ? 'Processing…' : 'Submit Withdrawal'}
+                {loading ? <><Loader2 className="animate-spin w-3.5 h-3.5" /> Processing...</> : 'Request Withdrawal'}
               </button>
             </form>
           </div>

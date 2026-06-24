@@ -1,5 +1,5 @@
-import { useState, useEffect, FormEvent } from 'react';
-import { X, Loader2, Copy, CheckCircle2, ExternalLink, Bitcoin, CreditCard, Building2, AlertCircle } from 'lucide-react';
+import { useState, useEffect, FormEvent, useRef } from 'react';
+import { X, Loader2, Copy, CheckCircle2, ExternalLink, Bitcoin, CreditCard, Building2, AlertCircle, Upload, FileText, Image } from 'lucide-react';
 
 interface CryptoAddresses {
   btc: string | null;
@@ -44,6 +44,9 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
   const [txHash, setTxHash] = useState('');
   const [copied, setCopied] = useState('');
   const [cryptoSubmitted, setCryptoSubmitted] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofBase64, setProofBase64] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch('/api/settings')
@@ -139,17 +142,36 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
     }, 3000); // Poll every 3 seconds
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError('File must be under 5MB.'); return; }
+    setProofFile(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      setProofBase64(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleCryptoSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const amt = parseAmount();
     if (!amt) { setError('Enter a valid amount'); return; }
-    if (!txHash.trim()) { setError('Paste your transaction hash'); return; }
+    if (!proofBase64 && !txHash.trim()) { setError('Please upload payment proof or paste transaction hash'); return; }
     setLoading(true); setError('');
     try {
       const r = await fetch('/api/payments/crypto/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: amt, network: cryptoNetwork, txHash: txHash.trim() }),
+        body: JSON.stringify({
+          amount: amt,
+          network: cryptoNetwork,
+          txHash: txHash.trim() || null,
+          proofImageBase64: proofBase64 || null,
+          proofImageName: proofFile ? proofFile.name : null
+        }),
         credentials: 'include',
       });
       const data = await r.json();
@@ -328,8 +350,49 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                     </div>
                   </div>
 
+                  {/* Proof of payment upload */}
                   <div>
-                    <label className="block text-brand-muted font-sans text-xs mb-1.5">Transaction Hash (after sending)</label>
+                    <label className="block text-brand-muted font-sans text-xs mb-2 uppercase tracking-wider font-semibold">Proof of Payment</label>
+                    <p className="text-[10px] text-brand-muted font-sans mb-2">Upload a screenshot or photo of your transaction confirmation.</p>
+
+                    {proofFile ? (
+                      <div className="flex items-center gap-3 bg-brand-bg border border-brand-gold/30 rounded-lg px-3 py-2.5">
+                        {proofFile.type.startsWith('image/') ? (
+                          <Image className="w-4 h-4 text-brand-gold shrink-0" />
+                        ) : (
+                          <FileText className="w-4 h-4 text-brand-gold shrink-0" />
+                        )}
+                        <span className="text-xs font-sans text-brand-text flex-1 truncate">{proofFile.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => { setProofFile(null); setProofBase64(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                          className="text-brand-muted hover:text-red-400 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full border border-dashed border-brand-border rounded-lg py-4 flex flex-col items-center gap-2 hover:border-brand-gold/50 hover:bg-brand-gold/5 transition-all"
+                      >
+                        <Upload className="w-5 h-5 text-brand-muted" />
+                        <span className="text-xs font-sans text-brand-muted">Click to upload proof</span>
+                        <span className="text-[10px] font-sans text-brand-muted/60">JPG, PNG · Max 5MB</span>
+                      </button>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/jpg"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-brand-muted font-sans text-xs mb-1.5">Transaction Hash (optional if proof uploaded)</label>
                     <input
                       type="text" value={txHash} onChange={e => setTxHash(e.target.value)}
                       placeholder="Paste your tx hash here"
@@ -339,11 +402,10 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
 
                   <button
                     type="submit"
-                    disabled={loading || !currentAddress}
-                    className="w-full bg-brand-gold text-black font-sans font-bold py-2.5 rounded-lg hover:bg-brand-gold/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                    disabled={loading || (!proofFile && !txHash.trim()) || !parseAmount()}
+                    className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                   >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                    {loading ? 'Submitting…' : 'Submit for Review'}
+                    {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting...</> : 'Submit Deposit'}
                   </button>
                 </form>
               )}

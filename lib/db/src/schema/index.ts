@@ -11,6 +11,8 @@ export const usersTable = pgTable("users", {
   avatarUrl: text("avatar_url"),
   isAdmin: boolean("is_admin").notNull().default(false),
   emailVerified: boolean("email_verified").notNull().default(false),
+  adminVerified: boolean("admin_verified").notNull().default(false),
+  phoneNumber: varchar("phone_number", { length: 30 }),
   tier: varchar("tier", { length: 50 }).notNull().default("Pro"),
   theme: varchar("theme", { length: 50 }).notNull().default("sovereign"),
   biometricEnabled: boolean("biometric_enabled").notNull().default(false),
@@ -51,6 +53,7 @@ export const paymentsTable = pgTable("payments", {
   provider: varchar("provider", { length: 30 }).notNull(), // monnify | flutterwave | paystack | crypto
   referenceId: varchar("reference_id", { length: 255 }),
   txHash: text("tx_hash"),
+  proofImageBase64: text("proof_image_base64"),
   amount: real("amount").notNull(),
   currency: varchar("currency", { length: 10 }).notNull().default("USD"),
   status: varchar("status", { length: 20 }).notNull().default("pending"), // pending | success | failed | manual_review

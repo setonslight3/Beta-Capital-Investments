@@ -1,4 +1,4 @@
-export type ScreenType = 'landing' | 'login' | 'signup' | 'dashboard' | 'verify-email' | 'forgot-password' | 'admin';
+export type ScreenType = 'landing' | 'login' | 'signup' | 'dashboard' | 'verify-email' | 'forgot-password' | 'admin' | 'pending';
 
 export type ColorThemeType = 'sovereign' | 'royal-marine' | 'emerald-reserve' | 'emperor-purple';
 
@@ -12,6 +12,8 @@ export interface UserSession {
   tier: string;
   theme: ColorThemeType;
   isAdmin?: boolean;
+  adminVerified?: boolean;
+  phoneNumber?: string;
   avatarUrl?: string;
   emailVerified?: boolean;
 }

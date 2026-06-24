@@ -1,5 +1,5 @@
-﻿import { useState, FormEvent } from 'react';
-import { Lock, Loader2, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { useState, FormEvent } from 'react';
+import { Lock, Loader2, ArrowLeft, Eye, EyeOff, Clock } from 'lucide-react';
 import { ScreenType } from '../types';
 import LogoIcon from './LogoIcon';
 import { useLogin } from '@workspace/api-client-react';
@@ -15,6 +15,7 @@ export default function LoginView({ onNavigate, onLoginSuccess }: LoginViewProps
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorText, setErrorText] = useState('');
+  const [isPending, setIsPending] = useState(false);
   const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
 
   const loginMutation = useLogin();
@@ -22,6 +23,7 @@ export default function LoginView({ onNavigate, onLoginSuccess }: LoginViewProps
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setErrorText('');
+    setIsPending(false);
     if (!email.trim()) { setErrorText('Please enter your email address.'); return; }
     if (!password) { setErrorText('Please enter your password.'); return; }
 
@@ -38,8 +40,16 @@ export default function LoginView({ onNavigate, onLoginSuccess }: LoginViewProps
             isAdmin: (data as { isAdmin?: boolean }).isAdmin,
           });
         },
-        onError: () => {
-          setErrorText('Invalid email or password. Please try again.');
+        onError: (err: unknown) => {
+          const anyErr = err as { response?: { data?: { message?: string; code?: string }; status?: number } };
+          const code = anyErr?.response?.data?.code;
+          const msg = anyErr?.response?.data?.message ?? '';
+          if (code === 'ACCOUNT_PENDING' || msg.includes('pending') || anyErr?.response?.status === 403) {
+            setIsPending(true);
+            setErrorText('');
+          } else {
+            setErrorText('Invalid email or password. Please try again.');
+          }
         },
       }
     );
@@ -72,6 +82,16 @@ export default function LoginView({ onNavigate, onLoginSuccess }: LoginViewProps
                 <h1 className="text-2xl sm:text-3xl text-brand-text font-serif mb-1">Welcome Back</h1>
                 <p className="text-xs text-brand-muted font-sans tracking-wide uppercase">Sign in to your investment account</p>
               </div>
+
+              {isPending && (
+                <div className="mb-4 bg-yellow-950/40 border border-yellow-500/30 text-yellow-200 text-xs py-3 px-4 rounded font-sans leading-relaxed flex items-start gap-2">
+                  <Clock className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-yellow-300 mb-1">Account Pending Verification</p>
+                    <p>Your account is still under review by our compliance team. You will receive an email once approved (typically 1–3 business days).</p>
+                  </div>
+                </div>
+              )}
 
               {errorText && (
                 <div className="mb-4 bg-red-950/40 border border-red-500/30 text-red-300 text-xs py-2.5 px-3 rounded font-sans leading-relaxed">

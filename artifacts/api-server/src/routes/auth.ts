@@ -1,8 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import bcrypt from "bcrypt";
 import { db } from "@workspace/db";
-import { usersTable } from "@workspace/db/schema";
-import { notificationsTable } from "@workspace/db/schema";
+import { usersTable, kycDocumentsTable, notificationsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { Resend } from "resend";
 
@@ -36,6 +35,7 @@ export function serializeUser(user: typeof usersTable.$inferSelect) {
     liquidity: user.liquidity,
     isAdmin: user.isAdmin,
     emailVerified: user.emailVerified,
+    adminVerified: user.adminVerified,
     avatarUrl: user.avatarUrl,
     bankName: user.bankName,
     bankAccountNumber: user.bankAccountNumber,
@@ -139,7 +139,7 @@ export async function sendAccountApprovedEmail(user: typeof usersTable.$inferSel
 }
 
 router.post("/auth/signup", async (req: Request, res: Response) => {
-  const { email, password, fullName } = req.body;
+  const { email, password, fullName, phoneNumber, kycDocBase64, kycDocName, kycDocType } = req.body;
   if (!email || !password || !fullName) {
     res.status(400).json({ message: "All fields required" });
     return;
@@ -158,17 +158,16 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const admin = isAdminEmail(email);
 
-  // Auto-verify email when no email service is configured (Resend API key missing)
-  const autoVerify = !process.env.RESEND_API_KEY || admin;
-
   const [user] = await db
     .insert(usersTable)
     .values({
       email: email.toLowerCase(),
       fullName,
       passwordHash,
+      phoneNumber: phoneNumber ?? null,
       isAdmin: admin,
-      emailVerified: autoVerify,
+      emailVerified: admin,
+      adminVerified: admin,
       tier: "Bronze Ore",
       theme: "sovereign",
       biometricEnabled: false,
@@ -176,15 +175,29 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
     })
     .returning();
 
+  // Store KYC document if provided
+  if (kycDocBase64 && kycDocName && kycDocType && !admin) {
+    await db.insert(kycDocumentsTable).values({
+      userId: user.id,
+      docType: kycDocType,
+      fileDataBase64: kycDocBase64,
+      fileName: kycDocName,
+      mimeType: kycDocName.endsWith(".pdf") ? "application/pdf" : "image/jpeg",
+      status: "pending",
+    });
+  }
+
   const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   await db.insert(notificationsTable).values({
     id: notifId,
     userId: user.id,
-    title: "Welcome to BetterCapitalInvestment",
-    message: "Your account has been created and is under review. We'll notify you once it's approved.",
+    title: admin ? "Welcome to Beta Capital Investment" : "Account Under Review",
+    message: admin
+      ? "Your admin account is ready. Welcome to the platform."
+      : "Your registration is complete. Our team is reviewing your account and KYC documents. You will be notified once approved.",
     timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
     read: false,
-    type: "success",
+    type: "info",
   });
 
   // Send pending approval email (non-blocking)
@@ -192,8 +205,12 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
     sendAccountPendingEmail(user).catch(err => console.error("Email send failed:", err));
   }
 
-  req.session.userId = user.id;
-  res.status(201).json(serializeUser(user));
+  if (admin) {
+    req.session.userId = user.id;
+    res.status(201).json(serializeUser(user));
+  } else {
+    res.status(201).json({ pending: true, email: user.email });
+  }
 });
 
 router.post("/auth/login", async (req: Request, res: Response) => {
@@ -220,10 +237,17 @@ router.post("/auth/login", async (req: Request, res: Response) => {
     return;
   }
 
+  // Check admin verification for non-admin users
+  if (!user.isAdmin && !user.adminVerified) {
+    res.status(403).json({ message: "Your account is pending admin verification. Please wait for approval.", code: "ACCOUNT_PENDING" });
+    return;
+  }
+
   // Auto-promote admin emails
   if (isAdminEmail(email) && !user.isAdmin) {
-    await db.update(usersTable).set({ isAdmin: true }).where(eq(usersTable.id, user.id));
+    await db.update(usersTable).set({ isAdmin: true, adminVerified: true }).where(eq(usersTable.id, user.id));
     user.isAdmin = true;
+    user.adminVerified = true;
   }
 
   req.session.userId = user.id;

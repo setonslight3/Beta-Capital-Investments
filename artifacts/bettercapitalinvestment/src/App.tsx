@@ -7,6 +7,7 @@ import DashboardView from "./components/DashboardView";
 import OTPVerifyView from "./components/OTPVerifyView";
 import ForgotPasswordView from "./components/ForgotPasswordView";
 import AdminDashboard from "./components/AdminDashboard";
+import PendingView from "./components/PendingView";
 import CookieConsent from "./components/CookieConsent";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { PlatformProvider } from "./context/PlatformContext";
@@ -119,6 +120,7 @@ function AppInner() {
   const [session, setSession] = useState<UserSession>(DEFAULT_SESSION);
   const [authChecked, setAuthChecked] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState("");
+  const [pendingEmail, setPendingEmail] = useState("");
   const [globalError, setGlobalError] = useState("");
 
   const { data: me, isLoading: meLoading } = useGetMe({
@@ -179,7 +181,8 @@ function AppInner() {
       if (
         currentScreen === "landing" ||
         currentScreen === "login" ||
-        currentScreen === "signup"
+        currentScreen === "signup" ||
+        currentScreen === "pending"
       ) {
         const isAdmin = (me as { isAdmin?: boolean }).isAdmin;
         setCurrentScreen(isAdmin ? "admin" : "dashboard");
@@ -223,8 +226,11 @@ function AppInner() {
     handleNavigate(user.isAdmin ? "admin" : "dashboard");
   };
 
-  const handleSignupSuccess = (emailOrUser: string | SignupUser) => {
-    if (typeof emailOrUser === "string") {
+  const handleSignupSuccess = (emailOrUser: string | SignupUser | { pending: true; email: string }) => {
+    if (typeof emailOrUser === "object" && "pending" in emailOrUser) {
+      setPendingEmail(emailOrUser.email);
+      handleNavigate("pending");
+    } else if (typeof emailOrUser === "string") {
       // Email service active — go to OTP verification screen
       setVerifyEmail(emailOrUser);
       handleNavigate("verify-email");
@@ -320,6 +326,13 @@ function AppInner() {
           />
           {GlobalErrorBanner}
         </>
+      );
+    case "pending":
+      return (
+        <PendingView
+          onNavigate={handleNavigate}
+          email={pendingEmail}
+        />
       );
     case "verify-email":
       return (

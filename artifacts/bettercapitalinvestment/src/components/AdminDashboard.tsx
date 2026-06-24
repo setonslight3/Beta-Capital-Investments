@@ -3,7 +3,7 @@ import {
   Users, TrendingUp, Wallet, Activity, Settings, Bell, CreditCard,
   BarChart3, Loader2, LogOut, RefreshCw, Edit3, Check, X, ChevronDown,
   Shield, AlertTriangle, CheckCircle2, DollarSign, Layers, FileText,
-  Download, ArrowDownLeft, ShieldCheck
+  Download, ArrowDownLeft, ShieldCheck, Copy
 } from 'lucide-react';
 import { ScreenType, UserSession } from '../types';
 import LogoIcon from './LogoIcon';
@@ -375,11 +375,12 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
           {/* ── USERS ── */}
           {!loading && tab === 'users' && (
             <div className="bg-brand-surface border border-brand-border rounded-lg overflow-hidden">
-              <div className="grid grid-cols-7 gap-3 px-4 py-3 border-b border-brand-border text-[10px] font-sans uppercase tracking-wider text-brand-muted">
+              <div className="grid grid-cols-8 gap-2 px-4 py-3 border-b border-brand-border text-[10px] font-sans uppercase tracking-wider text-brand-muted">
                 <span className="col-span-2">User</span>
                 <span>Tier</span>
                 <span>Balance</span>
-                <span>Status</span>
+                <span>Email</span>
+                <span>Account</span>
                 <span>Admin</span>
                 <span>Actions</span>
               </div>
@@ -409,16 +410,34 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                         </div>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-7 gap-3 items-center">
+                      <div className="grid grid-cols-8 gap-2 items-center">
                         <div className="col-span-2 min-w-0">
                           <div className="text-xs font-semibold text-brand-text truncate">{u.fullName}</div>
                           <div className="text-[10px] text-brand-muted font-sans truncate">{u.email}</div>
+                          {(u as { phoneNumber?: string }).phoneNumber && (
+                            <div className="text-[10px] text-brand-muted font-sans">{(u as { phoneNumber?: string }).phoneNumber}</div>
+                          )}
                         </div>
                         <span className="text-xs text-brand-gold font-sans">{u.tier}</span>
                         <span className="text-xs text-green-400 font-sans font-bold">{fmt(u.liquidity)}</span>
-                        <span className={badge(u.emailVerified ? 'active' : 'pending')}>{u.emailVerified ? 'Verified' : 'Unverified'}</span>
+                        <span className={badge(u.emailVerified ? 'active' : 'pending')}>{u.emailVerified ? 'Verified' : 'Pending'}</span>
+                        <span className={badge((u as { adminVerified?: boolean }).adminVerified ? 'active' : 'pending')}>
+                          {(u as { adminVerified?: boolean }).adminVerified ? 'Approved' : 'Pending'}
+                        </span>
                         <span className={`text-[10px] font-sans font-bold ${u.isAdmin ? 'text-red-400' : 'text-brand-muted'}`}>{u.isAdmin ? 'Admin' : 'User'}</span>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1">
+                          {!(u as { adminVerified?: boolean }).adminVerified && !u.isAdmin && (
+                            <button
+                              onClick={async () => {
+                                await fetch(`/api/admin/users/${u.id}/verify`, { method: 'POST', credentials: 'include' });
+                                load('users');
+                              }}
+                              className="flex items-center gap-0.5 bg-green-700/80 hover:bg-green-700 text-white text-[9px] px-1.5 py-1 rounded font-sans transition-colors"
+                              title="Approve account"
+                            >
+                              <ShieldCheck className="w-3 h-3" />
+                            </button>
+                          )}
                           <button onClick={() => setEditingUser(u.id)} className="text-brand-muted hover:text-brand-gold transition-colors" title="Edit"><Edit3 className="w-3.5 h-3.5" /></button>
                           <button onClick={() => deleteUser(u.id)} className="text-brand-muted hover:text-red-400 transition-colors" title="Delete"><X className="w-3.5 h-3.5" /></button>
                         </div>
@@ -521,6 +540,17 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                         <div className="text-xs font-semibold text-brand-text truncate">{p.userFullName}</div>
                         <div className="text-[10px] text-brand-muted font-mono truncate">{p.txHash ?? p.referenceId ?? p.id}</div>
                         {p.metadata && (() => { try { const m = JSON.parse(p.metadata); return m.network ? <span className="text-[10px] text-brand-gold font-sans">{m.network}</span> : null; } catch { return null; } })()}
+                        {(p as { proofImageBase64?: string }).proofImageBase64 && (
+                          <button
+                            onClick={() => {
+                              const w = window.open();
+                              if (w) w.document.write(`<img src="data:image/jpeg;base64,${(p as { proofImageBase64?: string }).proofImageBase64}" style="max-width:100%;"/>`);
+                            }}
+                            className="text-[10px] text-blue-400 hover:text-blue-300 font-sans underline mt-0.5 block"
+                          >
+                            View Proof
+                          </button>
+                        )}
                       </div>
                       <span className={`text-[10px] font-sans font-bold uppercase ${p.provider === 'crypto' ? 'text-yellow-400' : 'text-brand-muted'}`}>{p.provider}</span>
                       <span className="text-xs text-brand-gold font-bold">{fmt(p.amount)}</span>
@@ -575,7 +605,18 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                           {w.method === 'bank' && (
                             <div className="text-[10px] font-sans text-brand-muted text-right leading-loose">
                               <div>{w.bankName}</div>
-                              <div className="font-mono">{w.bankAccountNumber}</div>
+                              <div className="font-mono flex items-center justify-end gap-1">
+                                {w.bankAccountNumber}
+                                {w.bankAccountNumber && (
+                                  <button
+                                    onClick={() => { navigator.clipboard.writeText(w.bankAccountNumber); }}
+                                    className="text-brand-muted hover:text-brand-gold transition-colors ml-1"
+                                    title="Copy account number"
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
                               <div>{w.bankAccountName}</div>
                             </div>
                           )}

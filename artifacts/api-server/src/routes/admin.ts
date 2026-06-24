@@ -20,8 +20,8 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   allow_new_signups: "true",
   allow_new_investments: "true",
   max_withdrawal_daily: "50000",
-  platform_name: "BetterCapitalInvestment",
-  support_email: "support@BetterCapitalInvestment.space",
+  platform_name: "Beta Capital Investments",
+  support_email: "support@betacapitalinvestments.com",
   // Gateway toggles
   gateway_monnify_enabled: "true",
   gateway_paystack_enabled: "true",
@@ -377,7 +377,7 @@ router.patch("/admin/withdrawals/:id", requireAdmin, async (req: Request, res: R
         read: false, type: "alert",
       });
 
-      sendEmail(user.email, "Withdrawal Request Rejected — BetterCapitalInvestment",
+      sendEmail(user.email, "Withdrawal Request Rejected — Beta Capital Investments",
         withdrawalEmailHtml(user.fullName, fmt(wd.amount), wd.method, "rejected", adminNote)).catch(() => {});
     }
   }
@@ -392,7 +392,7 @@ router.patch("/admin/withdrawals/:id", requireAdmin, async (req: Request, res: R
         timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
         read: false, type: "success",
       });
-      sendEmail(user.email, "Withdrawal Approved — BetterCapitalInvestment",
+      sendEmail(user.email, "Withdrawal Approved — Beta Capital Investments",
         withdrawalEmailHtml(user.fullName, fmt(wd.amount), wd.method, "approved", adminNote)).catch(() => {});
     }
   }

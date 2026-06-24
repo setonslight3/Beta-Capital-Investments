@@ -19,7 +19,7 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "bonnieprincewill6@gmail.com,s
   .filter(Boolean);
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const EMAIL_FROM = process.env.EMAIL_FROM ?? "BetterCapitalInvestment <no-reply@betacapitalinvestments.com>";
+const EMAIL_FROM = process.env.EMAIL_FROM ?? "Beta Capital Investments <no-reply@betacapitalinvestments.com>";
 
 export function isAdminEmail(email: string): boolean {
   return ADMIN_EMAILS.includes(email.toLowerCase());
@@ -61,7 +61,7 @@ async function sendAccountPendingEmail(user: typeof usersTable.$inferSelect) {
     await resend.emails.send({
       from: EMAIL_FROM,
       to: user.email,
-      subject: "Welcome to BetterCapitalInvestment - Your Account is Under Review",
+      subject: "Welcome to Beta Capital Investments - Your Account is Under Review",
       html: `
         <!DOCTYPE html>
         <html>
@@ -72,15 +72,15 @@ async function sendAccountPendingEmail(user: typeof usersTable.$inferSelect) {
               <table width="480" cellpadding="0" cellspacing="0" style="background:#131d26;border:1px solid #1e2d3d;border-radius:8px;overflow:hidden;">
                 <tr><td style="height:3px;background:#f2ca50;"></td></tr>
                 <tr><td style="padding:32px 40px;">
-                  <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">BetterCapitalInvestment</p>
+                  <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">Beta Capital Investments</p>
                   <h1 style="margin:0 0 16px;font-size:24px;color:#e8dcc8;">Welcome! Account Under Review</h1>
                   <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Hi ${user.fullName},</p>
-                  <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Thank you for signing up with BetterCapitalInvestment. Your account is currently under review by our admin team.</p>
+                  <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Thank you for signing up with Beta Capital Investments. Your account is currently under review by our admin team.</p>
                   <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">We'll notify you via email once your account has been approved and you can start investing.</p>
-                  <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">This typically takes 24-48 hours. Contact support@bettercapitalinvestment.com for questions.</p>
+                  <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">This typically takes 24-48 hours. Contact support@betacapitalinvestments.com for questions.</p>
                 </td></tr>
                 <tr><td style="padding:16px 40px;border-top:1px solid #1e2d3d;">
-                  <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} BetterCapitalInvestment. All rights reserved.</p>
+                  <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} Beta Capital Investments. All rights reserved.</p>
                   <p style="margin:4px 0 0;color:#4a5a6b;font-family:sans-serif;font-size:10px;">Developed by Setons and Kirito</p>
                 </td></tr>
               </table>
@@ -102,7 +102,7 @@ export async function sendAccountApprovedEmail(user: typeof usersTable.$inferSel
     await resend.emails.send({
       from: EMAIL_FROM,
       to: user.email,
-      subject: "Your BetterCapitalInvestment Account Has Been Approved!",
+      subject: "Your Beta Capital Investments Account Has Been Approved!",
       html: `
         <!DOCTYPE html>
         <html>
@@ -113,18 +113,18 @@ export async function sendAccountApprovedEmail(user: typeof usersTable.$inferSel
               <table width="480" cellpadding="0" cellspacing="0" style="background:#131d26;border:1px solid #1e2d3d;border-radius:8px;overflow:hidden;">
                 <tr><td style="height:3px;background:#22c55e;"></td></tr>
                 <tr><td style="padding:32px 40px;">
-                  <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">BetterCapitalInvestment</p>
+                  <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">Beta Capital Investments</p>
                   <h1 style="margin:0 0 16px;font-size:24px;color:#22c55e;">🎉 Great News! Account Approved</h1>
                   <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Hi ${user.fullName},</p>
-                  <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Your account has been approved! You can now log in and start investing with BetterCapitalInvestment.</p>
+                  <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Your account has been approved! You can now log in and start investing with Beta Capital Investments.</p>
                   <div style="margin:24px 0;text-align:center;">
-                    <a href="https://bettercapitalinvestments.netlify.app" style="display:inline-block;background:#f2ca50;color:#0d1419;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:700;font-family:sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:1px;">Login Now</a>
+                    <a href="https://betacapitalinvestments.com" style="display:inline-block;background:#f2ca50;color:#0d1419;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:700;font-family:sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:1px;">Login Now</a>
                   </div>
                   <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Start exploring our investment plans and grow your wealth with confidence.</p>
-                  <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">Need help? Contact support@bettercapitalinvestment.com</p>
+                  <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">Need help? Contact support@betacapitalinvestments.com</p>
                 </td></tr>
                 <tr><td style="padding:16px 40px;border-top:1px solid #1e2d3d;">
-                  <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} BetterCapitalInvestment. All rights reserved.</p>
+                  <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} Beta Capital Investments. All rights reserved.</p>
                   <p style="margin:4px 0 0;color:#4a5a6b;font-family:sans-serif;font-size:10px;">Developed by Setons and Kirito</p>
                 </td></tr>
               </table>

@@ -43,7 +43,7 @@ router.post("/auth/request-otp", async (req: Request, res: Response) => {
     used: false,
   });
 
-  const subject = type === "email_verify" ? "Verify Your BetterCapitalInvestment Account" : "Reset Your BetterCapitalInvestment Password";
+  const subject = type === "email_verify" ? "Verify Your Beta Capital Investments Account" : "Reset Your Beta Capital Investments Password";
   await sendEmail(user.email, subject, otpEmailHtml(code, type === "email_verify" ? "verify" : "reset", user.fullName));
 
   res.json({ message: "Code sent. Check your email." });
@@ -88,7 +88,7 @@ router.post("/auth/verify-email", async (req: Request, res: Response) => {
     id: notifId,
     userId: user.id,
     title: "Account Verified",
-    message: "Your email has been verified. Welcome to BetterCapitalInvestment — deposit funds to begin investing.",
+    message: "Your email has been verified. Welcome to Beta Capital Investments — deposit funds to begin investing.",
     timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
     read: false,
     type: "success",
@@ -120,7 +120,7 @@ router.post("/auth/forgot-password", async (req: Request, res: Response) => {
 
   const emailConfigured = !!process.env.RESEND_API_KEY;
   if (emailConfigured) {
-    await sendEmail(user.email, "Reset Your BetterCapitalInvestment Password", otpEmailHtml(code, "reset", user.fullName));
+    await sendEmail(user.email, "Reset Your Beta Capital Investments Password", otpEmailHtml(code, "reset", user.fullName));
     res.json({ message: "Reset code sent. Check your email." });
   } else {
     // No email service configured — return code directly so user can still reset password

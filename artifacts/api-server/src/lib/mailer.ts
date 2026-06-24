@@ -1,7 +1,7 @@
 import { logger } from "./logger";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM = process.env.EMAIL_FROM ?? "BetterCapitalInvestment <no-reply@betacapitalinvestments.com>";
+const FROM = process.env.EMAIL_FROM ?? "Beta Capital Investments <no-reply@betacapitalinvestments.com>";
 
 export async function sendEmail(to: string, subject: string, html: string): Promise<void> {
   if (!RESEND_API_KEY) {
@@ -34,7 +34,7 @@ export function otpEmailHtml(code: string, type: "verify" | "reset", name: strin
   const title = type === "verify" ? "Verify Your Email" : "Reset Your Password";
   const body =
     type === "verify"
-      ? "You're almost set. Enter this code to verify your BetterCapitalInvestment account."
+      ? "You're almost set. Enter this code to verify your Beta Capital Investments account."
       : "We received a request to reset your password. Use the code below.";
 
   return `<!DOCTYPE html>
@@ -46,7 +46,7 @@ export function otpEmailHtml(code: string, type: "verify" | "reset", name: strin
       <table width="480" cellpadding="0" cellspacing="0" style="background:#131d26;border:1px solid #1e2d3d;border-radius:8px;overflow:hidden;">
         <tr><td style="height:3px;background:#f2ca50;"></td></tr>
         <tr><td style="padding:32px 40px;">
-          <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">BetterCapitalInvestment</p>
+          <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">Beta Capital Investments</p>
           <h1 style="margin:0 0 16px;font-size:28px;color:#e8dcc8;">${title}</h1>
           <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Hi ${name},</p>
           <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">${body}</p>
@@ -59,7 +59,7 @@ export function otpEmailHtml(code: string, type: "verify" | "reset", name: strin
           <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">If you did not request this, you can safely ignore this email.</p>
         </td></tr>
         <tr><td style="padding:16px 40px;border-top:1px solid #1e2d3d;">
-          <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} BetterCapitalInvestment. All rights reserved.</p>
+          <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} Beta Capital Investments. All rights reserved.</p>
         </td></tr>
       </table>
     </td></tr>
@@ -82,12 +82,12 @@ export function withdrawalEmailHtml(name: string, amount: string, method: string
       <table width="480" cellpadding="0" cellspacing="0" style="background:#131d26;border:1px solid #1e2d3d;border-radius:8px;overflow:hidden;">
         <tr><td style="height:3px;background:${color};"></td></tr>
         <tr><td style="padding:32px 40px;">
-          <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">BetterCapitalInvestment</p>
+          <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">Beta Capital Investments</p>
           <h1 style="margin:0 0 16px;font-size:24px;color:#e8dcc8;">Withdrawal ${statusLabel}</h1>
           <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;">Hi ${name},</p>
           <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;">Your withdrawal request of <strong style="color:#e8dcc8;">${amount}</strong> via <strong style="color:#e8dcc8;">${method}</strong> has been <strong style="color:${color};">${statusLabel.toLowerCase()}</strong>.</p>
           ${note ? `<p style="color:#8a9ab5;font-family:sans-serif;font-size:13px;background:#0d1419;padding:12px;border-radius:4px;">Note: ${note}</p>` : ""}
-          <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">Contact support@BetterCapitalInvestment.space for questions.</p>
+          <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">Contact support@betacapitalinvestments.com for questions.</p>
         </td></tr>
       </table>
     </td></tr>

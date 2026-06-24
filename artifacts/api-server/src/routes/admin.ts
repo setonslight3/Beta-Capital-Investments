@@ -6,7 +6,7 @@ import {
 } from "@workspace/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { requireAdmin } from "../lib/admin-middleware";
-import { sendEmail, withdrawalEmailHtml } from "../lib/mailer";
+import { sendEmail, withdrawalEmailHtml, accountDeletedEmailHtml } from "../lib/mailer";
 
 const router: IRouter = Router();
 
@@ -171,6 +171,19 @@ router.patch("/admin/users/:id", requireAdmin, async (req: Request, res: Respons
 
 router.delete("/admin/users/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = Number(req.params.id);
+  const { reason } = req.body as { reason?: string };
+
+  // Fetch user before deleting so we can send them an email
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!user) { res.status(404).json({ message: "User not found" }); return; }
+
+  // Send deletion notification email before removing the account
+  sendEmail(
+    user.email,
+    "Your Beta Capital Investments Account Has Been Deleted",
+    accountDeletedEmailHtml(user.fullName, reason),
+  ).catch((err) => console.error("Failed to send account deletion email:", err));
+
   await db.delete(usersTable).where(eq(usersTable.id, id));
   res.json({ message: "User deleted" });
 });

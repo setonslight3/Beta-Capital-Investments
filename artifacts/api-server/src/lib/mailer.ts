@@ -95,3 +95,35 @@ export function withdrawalEmailHtml(name: string, amount: string, method: string
 </body>
 </html>`;
 }
+
+export function accountDeletedEmailHtml(name: string, reason?: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/></head>
+<body style="margin:0;padding:0;background:#0d1419;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:#131d26;border:1px solid #1e2d3d;border-radius:8px;overflow:hidden;">
+        <tr><td style="height:3px;background:#ef4444;"></td></tr>
+        <tr><td style="padding:32px 40px;">
+          <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">Beta Capital Investments</p>
+          <h1 style="margin:0 0 16px;font-size:24px;color:#ef4444;">Account Deleted</h1>
+          <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Hi ${name},</p>
+          <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">We're writing to inform you that your Beta Capital Investments account has been permanently deleted by an administrator.</p>
+          ${reason ? `<div style="margin:20px 0;background:#0d1419;border:1px solid #1e2d3d;border-radius:6px;padding:16px;">
+            <p style="margin:0 0 4px;color:#e8dcc8;font-family:sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Reason</p>
+            <p style="margin:0;color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">${reason}</p>
+          </div>` : ""}
+          <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">All associated data, investments, and balances have been removed. This action cannot be undone.</p>
+          <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">If you believe this was done in error, please contact support@betacapitalinvestments.com immediately.</p>
+        </td></tr>
+        <tr><td style="padding:16px 40px;border-top:1px solid #1e2d3d;">
+          <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} Beta Capital Investments. All rights reserved.</p>
+          <p style="margin:4px 0 0;color:#4a5a6b;font-family:sans-serif;font-size:10px;">Developed by Setons and Kirito</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}

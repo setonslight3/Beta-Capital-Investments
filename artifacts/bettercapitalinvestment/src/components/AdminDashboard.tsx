@@ -141,11 +141,17 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
   };
 
   const deleteUser = async (id: number) => {
-    if (!confirm('Permanently delete this user?')) return;
+    const reason = prompt('Why is this account being deleted? (This will be sent to the user via email)');
+    if (reason === null) return; // User cancelled
+    if (!confirm('Permanently delete this user? This action cannot be undone and they will be notified via email.')) return;
     try {
-      await apiFetch(`/admin/users/${id}`, { method: 'DELETE' });
+      await apiFetch(`/admin/users/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason || undefined }),
+      });
       setUsers(prev => prev.filter(u => u.id !== id));
-      showFeedback('User deleted');
+      showFeedback('User deleted — notification email sent');
     } catch { setError('Failed to delete user'); }
   };
 

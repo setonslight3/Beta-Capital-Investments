@@ -281,5 +281,15 @@ router.get("/auth/inspect-db", async (_req: Request, res: Response) => {
   }
 });
 
+router.get("/auth/test-bcrypt", async (_req: Request, res: Response) => {
+  try {
+    const hash = await bcrypt.hash("test1234", 10);
+    const valid = await bcrypt.compare("test1234", hash);
+    res.json({ success: true, hash, valid });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message, stack: err.stack });
+  }
+});
+
 export default router;
 export { ADMIN_EMAILS };

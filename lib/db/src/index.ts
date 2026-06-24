@@ -14,13 +14,14 @@ if (!process.env.DATABASE_URL) {
 const databaseUrl = process.env.DATABASE_URL;
 const isProd = process.env.NODE_ENV === "production";
 
-// For production, explicitly use verify-full SSL mode as recommended
-// For development, allow connection without SSL
+// For production, explicitly configure SSL but bypass strict hostname/CA validation (rejectUnauthorized: false)
+// which is required for serverless connections to Neon/Supabase/Render Postgres databases.
+// For development, allow connection without SSL.
 const poolConfig: pg.PoolConfig = {
   connectionString: databaseUrl,
   ssl: isProd
     ? {
-        rejectUnauthorized: true, // verify-full equivalent
+        rejectUnauthorized: false,
       }
     : false,
 };

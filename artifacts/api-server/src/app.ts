@@ -113,4 +113,13 @@ app.use("/api/auth", authLimiter);
 app.use("/api", apiLimiter);
 app.use("/api", router);
 
+// Global Error Handling Middleware
+app.use((err: any, req: any, res: any, next: any) => {
+  logger.error(err, "Unhandled error in API");
+  res.status(500).json({
+    message: isProd ? "Internal Server Error" : err.message,
+    error: isProd ? undefined : err.stack,
+  });
+});
+
 export default app;

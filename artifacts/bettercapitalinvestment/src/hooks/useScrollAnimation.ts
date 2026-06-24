@@ -13,7 +13,7 @@ interface ScrollAnimationOptions {
  */
 export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>(
   options: ScrollAnimationOptions = {}
-): [React.RefObject<T>, boolean] {
+): [React.RefObject<T | null>, boolean] {
   const { threshold = 0.1, rootMargin = '0px', triggerOnce = true } = options;
   const ref = useRef<T>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -55,7 +55,7 @@ export function useScrollAnimation<T extends HTMLElement = HTMLDivElement>(
 export function useStaggerAnimation<T extends HTMLElement = HTMLDivElement>(
   count: number,
   delay: number = 100
-): [React.RefObject<T>, boolean[]] {
+): [React.RefObject<T | null>, boolean[]] {
   const ref = useRef<T>(null);
   const [visibleItems, setVisibleItems] = useState<boolean[]>(new Array(count).fill(false));
 

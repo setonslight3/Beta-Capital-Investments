@@ -21,7 +21,7 @@ import { DashboardTab, UserSession, ColorThemeType } from "../types";
 const NAV_ITEMS: { id: DashboardTab; label: string; icon: typeof Activity }[] =
   [
     { id: "overview", label: "Overview", icon: Activity },
-    { id: "positions", label: "Positions", icon: Layers },
+    { id: "positions", label: "Invest", icon: Layers },
     { id: "ledger", label: "Ledger", icon: BarChart3 },
     { id: "analytics", label: "Analytics", icon: TrendingUp },
     { id: "notifications", label: "Alerts", icon: Bell },

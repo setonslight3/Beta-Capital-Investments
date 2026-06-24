@@ -92,7 +92,7 @@ const THEMES: { key: ColorThemeType; label: string; color: string }[] = [
 const NAV_ITEMS: { id: DashboardTab; label: string; icon: typeof Activity }[] =
   [
     { id: "overview", label: "Overview", icon: Activity },
-    { id: "positions", label: "Positions", icon: Layers },
+    { id: "positions", label: "Invest", icon: Layers },
     { id: "ledger", label: "Ledger", icon: BarChart3 },
     { id: "analytics", label: "Analytics", icon: TrendingUp },
     { id: "notifications", label: "Alerts", icon: Bell },
@@ -367,6 +367,7 @@ export default function DashboardView({
   }, [transactions, txFilter, txSearch]);
 
   const activeInvestments = investments.filter((i) => i.status === "active");
+  const inactiveInvestments = investments.filter((i) => i.status !== "active");
 
   const txTypeColor = (type: string) => {
     if (type === "ROI Payout") return "text-green-400";
@@ -716,10 +717,10 @@ export default function DashboardView({
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-brand-text mb-1">
-                  Investment Positions
+                  Investments
                 </h1>
                 <p className="text-brand-muted text-sm font-sans">
-                  Manage your active capital allocations
+                  Manage your active capital allocations and explore new options
                 </p>
               </div>
               <button
@@ -740,105 +741,11 @@ export default function DashboardView({
               </span>
             </div>
 
-            {invLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="animate-spin w-6 h-6 text-brand-muted" />
-              </div>
-            ) : investments.length === 0 ? (
-              <div className="bg-brand-surface border border-brand-border rounded p-10 text-center">
-                <Coins className="w-10 h-10 text-brand-muted mx-auto mb-4 opacity-50" />
-                <p className="text-brand-text mb-2">No active positions</p>
-                <p className="text-sm text-brand-muted font-sans mb-6">
-                  Deposit funds and pledge capital to start earning returns.
-                </p>
-                <button
-                  onClick={() => setShowDepositModal(true)}
-                  className="bg-brand-gold text-brand-bg px-6 py-2.5 rounded text-xs font-bold font-sans uppercase tracking-widest hover:brightness-110 transition-all"
-                >
-                  Deposit Funds
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {investments.map((inv) => (
-                  <div
-                    key={inv.id}
-                    className={`bg-brand-surface border rounded p-5 ${inv.status === "active" ? "border-brand-border" : "border-brand-border/40 opacity-60"}`}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className={`text-[10px] font-sans font-bold px-2 py-0.5 rounded-full border ${inv.status === "active" ? "text-green-400 border-green-400/30 bg-green-400/10" : inv.status === "matured" ? "text-blue-400 border-blue-400/30 bg-blue-400/10" : "text-brand-muted border-brand-border bg-brand-bg"}`}
-                          >
-                            {inv.status.replace("_", " ").toUpperCase()}
-                          </span>
-                          <span className="text-[10px] font-sans text-brand-gold">
-                            {inv.tierName}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-semibold text-brand-text">
-                          {inv.sectorTitle}
-                        </h3>
-                        <p className="text-xs text-brand-muted font-sans">
-                          {inv.id} · Started {inv.startDateStamp}
-                        </p>
-                      </div>
-                      {inv.status === "active" && (
-                        <button
-                          onClick={() => setWithdrawInvestment(inv.id)}
-                          className="text-xs text-brand-muted hover:text-red-400 border border-brand-border hover:border-red-400/30 px-3 py-1.5 rounded font-sans transition-colors flex items-center gap-1.5"
-                        >
-                          <Trash2 className="w-3 h-3" /> Close
-                        </button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {[
-                        {
-                          label: "Principal",
-                          value: fmt(inv.amount),
-                          color: "text-brand-text",
-                        },
-                        {
-                          label: "Daily ROI",
-                          value: `${(inv.dailyRate * 100).toFixed(2)}%`,
-                          color: "text-brand-gold",
-                        },
-                        {
-                          label: "Days Active",
-                          value: `${inv.daysActive}`,
-                          color: "text-brand-muted",
-                        },
-                        {
-                          label: "Accrued Yield",
-                          value: fmt(inv.accruedYield),
-                          color: "text-green-400",
-                        },
-                      ].map((s) => (
-                        <div
-                          key={s.label}
-                          className="bg-brand-bg border border-brand-border rounded p-3"
-                        >
-                          <div className="text-[10px] text-brand-muted font-sans uppercase tracking-wide mb-1">
-                            {s.label}
-                          </div>
-                          <div className={`text-sm font-bold ${s.color}`}>
-                            {s.value}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Investment sectors */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-brand-text mb-4">
-                Available Sectors
-              </h3>
+            {/* 1. Investment Options */}
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-brand-text mb-4">
+                Investment Options
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {INVESTMENT_SECTORS.map((sector) => (
                   <div
@@ -890,6 +797,176 @@ export default function DashboardView({
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* 2. Actives */}
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-brand-text mb-4">
+                Active Investments
+              </h2>
+              {invLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="animate-spin w-6 h-6 text-brand-muted" />
+                </div>
+              ) : activeInvestments.length === 0 ? (
+                <div className="bg-brand-surface border border-brand-border rounded p-6 text-center text-brand-muted text-xs font-sans">
+                  No active investments. Select an option above to start a new investment.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {activeInvestments.map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="bg-brand-surface border border-brand-border rounded p-5"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] font-sans font-bold px-2 py-0.5 rounded-full border text-green-400 border-green-400/30 bg-green-400/10">
+                              ACTIVE
+                            </span>
+                            <span className="text-[10px] font-sans text-brand-gold">
+                              {inv.tierName}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-semibold text-brand-text">
+                            {inv.sectorTitle}
+                          </h3>
+                          <p className="text-xs text-brand-muted font-sans">
+                            {inv.id} · Started {inv.startDateStamp}
+                          </p>
+                        </div>
+                        {inv.status === "active" && (
+                          <button
+                            onClick={() => setWithdrawInvestment(inv.id)}
+                            className="text-xs text-brand-muted hover:text-red-400 border border-brand-border hover:border-red-400/30 px-3 py-1.5 rounded font-sans transition-colors flex items-center gap-1.5"
+                          >
+                            <Trash2 className="w-3 h-3" /> Close
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                          {
+                            label: "Principal",
+                            value: fmt(inv.amount),
+                            color: "text-brand-text",
+                          },
+                          {
+                            label: "Daily ROI",
+                            value: `${(inv.dailyRate * 100).toFixed(2)}%`,
+                            color: "text-brand-gold",
+                          },
+                          {
+                            label: "Days Active",
+                            value: `${inv.daysActive}`,
+                            color: "text-brand-muted",
+                          },
+                          {
+                            label: "Accrued Yield",
+                            value: fmt(inv.accruedYield),
+                            color: "text-green-400",
+                          },
+                        ].map((s) => (
+                          <div
+                            key={s.label}
+                            className="bg-brand-bg border border-brand-border rounded p-3"
+                          >
+                            <div className="text-[10px] text-brand-muted font-sans uppercase tracking-wide mb-1">
+                              {s.label}
+                            </div>
+                            <div className={`text-sm font-bold ${s.color}`}>
+                              {s.value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 3. Early Withdrawals */}
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-brand-text mb-4">
+                Early Withdrawals
+              </h2>
+              {invLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="animate-spin w-6 h-6 text-brand-muted" />
+                </div>
+              ) : inactiveInvestments.length === 0 ? (
+                <div className="bg-brand-surface border border-brand-border rounded p-6 text-center text-brand-muted text-xs font-sans">
+                  No early withdrawals or closed positions.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {inactiveInvestments.map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="bg-brand-surface border border-brand-border/40 opacity-70 rounded p-5"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span
+                              className={`text-[10px] font-sans font-bold px-2 py-0.5 rounded-full border ${inv.status === "matured" ? "text-blue-400 border-blue-400/30 bg-blue-400/10" : "text-brand-muted border-brand-border bg-brand-bg"}`}
+                            >
+                              {inv.status.replace("_", " ").toUpperCase()}
+                            </span>
+                            <span className="text-[10px] font-sans text-brand-gold">
+                              {inv.tierName}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-semibold text-brand-text">
+                            {inv.sectorTitle}
+                          </h3>
+                          <p className="text-xs text-brand-muted font-sans">
+                            {inv.id} · Started {inv.startDateStamp}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                          {
+                            label: "Principal",
+                            value: fmt(inv.amount),
+                            color: "text-brand-text",
+                          },
+                          {
+                            label: "Daily ROI",
+                            value: `${(inv.dailyRate * 100).toFixed(2)}%`,
+                            color: "text-brand-gold",
+                          },
+                          {
+                            label: "Days Active",
+                            value: `${inv.daysActive}`,
+                            color: "text-brand-muted",
+                          },
+                          {
+                            label: "Accrued Yield",
+                            value: fmt(inv.accruedYield),
+                            color: "text-green-400",
+                          },
+                        ].map((s) => (
+                          <div
+                            key={s.label}
+                            className="bg-brand-bg border border-brand-border rounded p-3"
+                          >
+                            <div className="text-[10px] text-brand-muted font-sans uppercase tracking-wide mb-1">
+                              {s.label}
+                            </div>
+                            <div className={`text-sm font-bold ${s.color}`}>
+                              {s.value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

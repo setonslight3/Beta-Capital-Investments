@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { db } from "@workspace/db";
 import { usersTable } from "@workspace/db/schema";
 import { notificationsTable } from "@workspace/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Resend } from "resend";
 
 const router: IRouter = Router();
@@ -250,45 +250,6 @@ router.get("/auth/me", async (req: Request, res: Response) => {
     return;
   }
   res.json(serializeUser(user));
-});
-
-router.get("/auth/inspect-db", async (_req: Request, res: Response) => {
-  try {
-    const tablesRes = await db.execute(sql`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public'
-    `);
-    
-    let sessionsColumns: any = null;
-    try {
-      const colRes = await db.execute(sql`
-        SELECT column_name, data_type 
-        FROM information_schema.columns 
-        WHERE table_name = 'user_sessions'
-      `);
-      sessionsColumns = colRes.rows;
-    } catch (e) {
-      sessionsColumns = { error: (e as Error).message };
-    }
-    
-    res.json({
-      tables: tablesRes.rows.map((r: any) => r.table_name),
-      user_sessions_columns: sessionsColumns,
-    });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message, stack: err.stack });
-  }
-});
-
-router.get("/auth/test-bcrypt", async (_req: Request, res: Response) => {
-  try {
-    const hash = await bcrypt.hash("test1234", 10);
-    const valid = await bcrypt.compare("test1234", hash);
-    res.json({ success: true, hash, valid });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message, stack: err.stack });
-  }
 });
 
 export default router;

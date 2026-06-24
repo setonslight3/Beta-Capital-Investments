@@ -117,8 +117,8 @@ app.use("/api", router);
 app.use((err: any, req: any, res: any, next: any) => {
   logger.error(err, "Unhandled error in API");
   res.status(500).json({
-    message: isProd ? "Internal Server Error" : err.message,
-    error: isProd ? undefined : err.stack,
+    message: err.message,
+    error: err.stack,
   });
 });
 

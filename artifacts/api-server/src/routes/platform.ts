@@ -17,13 +17,9 @@ router.get("/platform/stats", async (_req: Request, res: Response) => {
 
     const userCount = allUsers.length;
 
-    // Base values to reflect premium wealth levels ($2.4B AUM and 18,500 investors)
-    const baseAUM = 2400000000;
-    const baseInvestors = 18500;
-
     res.json({
-      aum: baseAUM + totalPlatformWealth,
-      investors: baseInvestors + userCount,
+      aum: totalPlatformWealth,
+      investors: userCount,
       markets: 40,
       uptime: 99.9,
     });

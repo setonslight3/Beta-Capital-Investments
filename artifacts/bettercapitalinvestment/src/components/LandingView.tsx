@@ -88,8 +88,8 @@ interface PlatformStats {
 
 function useLiveStats(): PlatformStats {
   const [stats, setStats] = useState<PlatformStats>({
-    aum: '$2.4B+',
-    investors: '18,500+',
+    aum: '—',
+    investors: '—',
     markets: '40+',
     uptime: '99.9%'
   });

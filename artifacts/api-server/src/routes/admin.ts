@@ -6,7 +6,7 @@ import {
 } from "@workspace/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { requireAdmin } from "../lib/admin-middleware";
-import { sendEmail, withdrawalEmailHtml, accountDeletedEmailHtml } from "../lib/mailer";
+import { sendEmail, withdrawalEmailHtml, accountDeletedEmailHtml, broadcastEmailHtml, accountFrozenEmailHtml } from "../lib/mailer";
 
 const router: IRouter = Router();
 
@@ -156,7 +156,10 @@ router.get("/admin/users", requireAdmin, async (_req: Request, res: Response) =>
 
 router.patch("/admin/users/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const { tier, isAdmin, emailVerified, adminVerified, liquidity, fullName, frozen } = req.body;
+  const [currentUser] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!currentUser) { res.status(404).json({ message: "User not found" }); return; }
+
+  const { tier, isAdmin, emailVerified, adminVerified, liquidity, fullName, frozen, freezeReason } = req.body;
   const updates: Partial<typeof usersTable.$inferInsert> = {};
   if (tier !== undefined) updates.tier = tier;
   if (isAdmin !== undefined) updates.isAdmin = isAdmin;
@@ -168,6 +171,15 @@ router.patch("/admin/users/:id", requireAdmin, async (req: Request, res: Respons
 
   const [user] = await db.update(usersTable).set(updates).where(eq(usersTable.id, id)).returning();
   if (!user) { res.status(404).json({ message: "User not found" }); return; }
+
+  if (frozen === true && !currentUser.frozen) {
+    sendEmail(
+      currentUser.email,
+      "Your Beta Capital Investments Account Has Been Frozen",
+      accountFrozenEmailHtml(currentUser.fullName, freezeReason || undefined)
+    ).catch(err => console.error("Failed to send account frozen email:", err));
+  }
+
   res.json({ id: user.id, email: user.email, fullName: user.fullName, tier: user.tier, isAdmin: user.isAdmin, liquidity: user.liquidity, emailVerified: user.emailVerified, adminVerified: user.adminVerified, frozen: user.frozen });
 });
 
@@ -534,7 +546,7 @@ router.post("/admin/notify-all", requireAdmin, async (req: Request, res: Respons
   const { title, message, type } = req.body;
   if (!title || !message) { res.status(400).json({ message: "title and message required" }); return; }
 
-  const users = await db.select({ id: usersTable.id }).from(usersTable);
+  const users = await db.select({ id: usersTable.id, email: usersTable.email, fullName: usersTable.fullName }).from(usersTable);
   const timestamp = new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 
   const values = users.map((u) => ({
@@ -543,7 +555,17 @@ router.post("/admin/notify-all", requireAdmin, async (req: Request, res: Respons
   }));
 
   if (values.length > 0) await db.insert(notificationsTable).values(values);
-  res.json({ message: `Notification sent to ${values.length} users` });
+
+  // Send emails to all users
+  for (const user of users) {
+    sendEmail(
+      user.email,
+      title,
+      broadcastEmailHtml(title, message, user.fullName)
+    ).catch((err) => console.error(`Failed to send broadcast email to ${user.email}:`, err));
+  }
+
+  res.json({ message: `Notification sent and emailed to ${values.length} users` });
 });
 
 export default router;

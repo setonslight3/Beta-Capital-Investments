@@ -133,11 +133,21 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
       if (userEdits.isAdmin !== undefined) data.isAdmin = userEdits.isAdmin === 'true';
       if (userEdits.emailVerified !== undefined) data.emailVerified = userEdits.emailVerified === 'true';
       if (userEdits.fullName) data.fullName = userEdits.fullName;
-      if (userEdits.frozen !== undefined) data.frozen = userEdits.frozen === 'true';
+      if (userEdits.frozen !== undefined) {
+        data.frozen = userEdits.frozen === 'true';
+        if (data.frozen) {
+          const u = users.find(usr => usr.id === id);
+          if (u && !u.frozen) {
+            const reason = prompt('Why is this account being frozen? (This will be sent to the user via email)');
+            if (reason === null) return; // User cancelled saving
+            data.freezeReason = reason || 'No reason specified';
+          }
+        }
+      }
       await apiFetch(`/admin/users/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       setEditingUser(null); setUserEdits({});
       setUsers(prev => prev.map(u => u.id === id ? { ...u, ...data } : u));
-      showFeedback('User updated');
+      showFeedback(data.frozen ? 'User updated & frozen — email sent' : 'User updated');
     } catch { setError('Failed to update user'); }
   };
 
@@ -159,13 +169,19 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
   const toggleFreezeUser = async (u: any) => {
     try {
       const newFrozen = !u.frozen;
+      let freezeReason: string | undefined = undefined;
+      if (newFrozen) {
+        const reason = prompt('Why is this account being frozen? (This will be sent to the user via email)');
+        if (reason === null) return; // User cancelled
+        freezeReason = reason || 'No reason specified';
+      }
       await apiFetch(`/admin/users/${u.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ frozen: newFrozen })
+        body: JSON.stringify({ frozen: newFrozen, freezeReason })
       });
       setUsers(prev => prev.map(usr => usr.id === u.id ? { ...usr, frozen: newFrozen } : usr));
-      showFeedback(newFrozen ? 'Account frozen' : 'Account unfrozen');
+      showFeedback(newFrozen ? 'Account frozen — notification email sent' : 'Account unfrozen');
     } catch { setError('Failed to toggle user freeze status'); }
   };
 

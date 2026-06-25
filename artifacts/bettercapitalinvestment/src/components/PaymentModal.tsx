@@ -15,7 +15,7 @@ interface PaymentModalProps {
 }
 
 type Tab = 'paystack' | 'flutterwave' | 'monnify' | 'crypto';
-type CryptoNetwork = 'BTC' | 'USDT-TRC20' | 'USDT-ERC20' | 'ETH' | 'SOL';
+type CryptoNetwork = 'BTC' | 'USDT-TRC20' | 'USDT-ERC20' | 'ETH' | 'SOL' | 'Crypto.com';
 
 const NETWORK_MAP: Record<CryptoNetwork, keyof CryptoAddresses> = {
   'BTC': 'btc',
@@ -23,6 +23,7 @@ const NETWORK_MAP: Record<CryptoNetwork, keyof CryptoAddresses> = {
   'USDT-ERC20': 'usdtErc20',
   'ETH': 'eth',
   'SOL': 'sol',
+  'Crypto.com': 'btc',
 };
 
 const ALL_TABS: { id: Tab; label: string; icon: React.ReactNode; settingKey: string }[] = [
@@ -40,7 +41,7 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [cryptoAddresses, setCryptoAddresses] = useState<CryptoAddresses>({ btc: null, usdtTrc20: null, usdtErc20: null, eth: null, sol: null });
-  const [cryptoNetwork, setCryptoNetwork] = useState<CryptoNetwork>('USDT-TRC20');
+  const [cryptoNetwork, setCryptoNetwork] = useState<CryptoNetwork>('Crypto.com');
   const [txHash, setTxHash] = useState('');
   const [copied, setCopied] = useState('');
   const [cryptoSubmitted, setCryptoSubmitted] = useState(false);
@@ -59,6 +60,37 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
     fetch('/api/payments/crypto/addresses', { credentials: 'include' })
       .then(r => r.json()).then(setCryptoAddresses).catch(() => {});
   }, []);
+
+  // Global paste handler for receipt screenshots
+  useEffect(() => {
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      if (tab !== 'crypto') return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+              setError('File must be under 5MB.');
+              return;
+            }
+            setProofFile(file);
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64 = (reader.result as string).split(',')[1];
+              setProofBase64(base64);
+            };
+            reader.readAsDataURL(file);
+            setError('');
+          }
+        }
+      }
+    };
+
+    window.addEventListener('paste', handleGlobalPaste);
+    return () => window.removeEventListener('paste', handleGlobalPaste);
+  }, [tab]);
 
   const enabledTabs = ALL_TABS.filter(t => gatewaySettings[t.settingKey] !== 'false');
 
@@ -298,45 +330,24 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                 </div>
               ) : (
                 <form onSubmit={handleCryptoSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-brand-muted font-sans text-xs mb-1.5">Select Network</label>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {(['BTC', 'USDT-TRC20', 'USDT-ERC20', 'ETH', 'SOL'] as CryptoNetwork[]).map(n => (
-                        <button
-                          key={n}
-                          type="button"
-                          onClick={() => setCryptoNetwork(n)}
-                          className={`px-2 py-1.5 rounded text-[10px] font-sans font-bold border transition-all ${
-                            cryptoNetwork === n
-                              ? 'bg-brand-gold/20 border-brand-gold text-brand-gold'
-                              : 'border-brand-border text-brand-muted hover:border-brand-gold/40'
-                          }`}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                    </div>
+                  {/* Instructions for Crypto.com */}
+                  <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-4 text-xs font-sans text-brand-muted leading-relaxed">
+                    <p className="font-bold text-brand-text mb-1 flex items-center gap-1.5">
+                      <Bitcoin className="w-4 h-4 text-brand-gold" />
+                      Deposit via Crypto.com
+                    </p>
+                    <p className="mb-3">
+                      Please make your deposit payment by transferring funds on <strong className="text-brand-text">Crypto.com</strong>.
+                    </p>
+                    <a
+                      href="https://crypto.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 bg-brand-gold/10 border border-brand-gold/30 hover:bg-brand-gold/20 text-brand-gold text-[10px] px-2.5 py-1.5  rounded font-bold transition-all uppercase tracking-wider"
+                    >
+                      Go to Crypto.com <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
-
-                  {currentAddress ? (
-                    <div>
-                      <label className="block text-brand-muted font-sans text-xs mb-1.5">Send {cryptoNetwork} to this address</label>
-                      <div className="bg-brand-bg border border-brand-border rounded-lg p-3 flex items-center gap-2">
-                        <span className="text-brand-text font-mono text-[11px] flex-1 break-all leading-relaxed">{currentAddress}</span>
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(currentAddress, 'addr')}
-                          className="shrink-0 text-brand-muted hover:text-brand-gold transition-colors"
-                        >
-                          {copied === 'addr' ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3">
-                      <p className="text-yellow-400 font-sans text-xs">Wallet address for {cryptoNetwork} not yet configured. Contact support.</p>
-                    </div>
-                  )}
 
                   <div>
                     <label className="block text-brand-muted font-sans text-xs mb-1.5">Amount in USD equivalent</label>
@@ -352,8 +363,8 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
 
                   {/* Proof of payment upload */}
                   <div>
-                    <label className="block text-brand-muted font-sans text-xs mb-2 uppercase tracking-wider font-semibold">Proof of Payment</label>
-                    <p className="text-[10px] text-brand-muted font-sans mb-2">Upload a screenshot or photo of your transaction confirmation.</p>
+                    <label className="block text-brand-muted font-sans text-xs mb-2 uppercase tracking-wider font-semibold">Proof of Payment / Receipt</label>
+                    <p className="text-[10px] text-brand-muted font-sans mb-2">Upload or paste (Ctrl+V) a screenshot or photo of your transaction receipt.</p>
 
                     {proofFile ? (
                       <div className="flex items-center gap-3 bg-brand-bg border border-brand-gold/30 rounded-lg px-3 py-2.5">
@@ -375,10 +386,10 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="w-full border border-dashed border-brand-border rounded-lg py-4 flex flex-col items-center gap-2 hover:border-brand-gold/50 hover:bg-brand-gold/5 transition-all"
+                        className="w-full border border-dashed border-brand-border rounded-lg py-6 flex flex-col items-center gap-2 hover:border-brand-gold/50 hover:bg-brand-gold/5 transition-all bg-brand-bg/20"
                       >
                         <Upload className="w-5 h-5 text-brand-muted" />
-                        <span className="text-xs font-sans text-brand-muted">Click to upload proof</span>
+                        <span className="text-xs font-sans text-brand-muted">Click to upload or paste receipt screenshot</span>
                         <span className="text-[10px] font-sans text-brand-muted/60">JPG, PNG · Max 5MB</span>
                       </button>
                     )}
@@ -391,18 +402,9 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-brand-muted font-sans text-xs mb-1.5">Transaction Hash (optional if proof uploaded)</label>
-                    <input
-                      type="text" value={txHash} onChange={e => setTxHash(e.target.value)}
-                      placeholder="Paste your tx hash here"
-                      className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-mono text-[11px] focus:outline-none focus:border-brand-gold/60"
-                    />
-                  </div>
-
                   <button
                     type="submit"
-                    disabled={loading || (!proofFile && !txHash.trim()) || !parseAmount()}
+                    disabled={loading || !proofFile || !parseAmount()}
                     className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                   >
                     {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting...</> : 'Submit Deposit'}

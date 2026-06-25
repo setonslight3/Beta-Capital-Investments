@@ -500,7 +500,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         </div>
         <div className="max-w-7xl mx-auto mt-10 pt-8 border-t border-brand-border/40">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-3">
-            <p className="text-brand-muted text-[11px] font-sans">© {new Date().getFullYear()} {platform.platformName}. All rights reserved. Investment involves risk.</p>
+            <p className="text-brand-muted text-[11px] font-sans">© {new Date().getFullYear()} {platform.platformName}. All rights reserved.</p>
             <div className="flex gap-6">
               {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map(item => (
                 <a key={item} href="#" className="text-brand-muted hover:text-brand-gold transition-colors text-[11px] font-sans">{item}</a>
@@ -583,10 +583,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
                 <h3 className="text-brand-text font-bold mb-2">Investment Plans & Returns</h3>
                 <p>Returns vary by tier: Gold Ore (0.5–1.0% daily), Silver Sterling (1.0–1.5% daily), Platinum Vault (1.5–2.0% daily), Diamond Reserve (2.0%+ daily). All rates are indicative and depend on market conditions.</p>
               </div>
-              <div>
-                <h3 className="text-brand-text font-bold mb-2">Risk Disclosure</h3>
-                <p>All investments carry risk. Past performance is not indicative of future results. The value of investments can go down as well as up. You may receive less than you invest. Beta Capital Investment is not a licensed financial advisor.</p>
-              </div>
+
               <div>
                 <h3 className="text-brand-text font-bold mb-2">Withdrawal Policy</h3>
                 <p>Withdrawals are processed within 1–3 business days after admin review. Early exit from an active position incurs a 5% penalty on principal. Accrued yield is always returned.</p>

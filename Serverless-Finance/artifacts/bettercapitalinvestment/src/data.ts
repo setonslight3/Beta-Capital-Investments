@@ -167,7 +167,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Is my investment insured or protected?',
-    a: 'Client funds are held in segregated accounts protected by AES-256 encryption and multi-signature cold storage. We conduct regular third-party audits. While all investments carry risk, our risk management framework is built to institutional standards.'
+    a: 'Client funds are held in segregated accounts protected by AES-256 encryption and multi-signature cold storage. We conduct regular third-party audits. Our risk management framework is built to institutional standards.'
   },
 
   {

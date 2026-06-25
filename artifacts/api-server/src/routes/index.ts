@@ -13,6 +13,7 @@ import profileRouter from "./profile";
 import paymentsRouter from "./payments";
 import adminRouter from "./admin";
 import kycRouter from "./kyc";
+import platformRouter from "./platform";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(profileRouter);
 router.use(paymentsRouter);
 router.use(adminRouter);
 router.use(kycRouter);
+router.use(platformRouter);
 
 export default router;

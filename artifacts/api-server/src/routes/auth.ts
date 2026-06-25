@@ -82,7 +82,6 @@ async function sendAccountPendingEmail(user: typeof usersTable.$inferSelect) {
                 </td></tr>
                 <tr><td style="padding:16px 40px;border-top:1px solid #1e2d3d;">
                   <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} Beta Capital Investments. All rights reserved.</p>
-                  <p style="margin:4px 0 0;color:#4a5a6b;font-family:sans-serif;font-size:10px;">Developed by Setons and Kirito</p>
                 </td></tr>
               </table>
             </td></tr>
@@ -126,7 +125,6 @@ export async function sendAccountApprovedEmail(user: typeof usersTable.$inferSel
                 </td></tr>
                 <tr><td style="padding:16px 40px;border-top:1px solid #1e2d3d;">
                   <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} Beta Capital Investments. All rights reserved.</p>
-                  <p style="margin:4px 0 0;color:#4a5a6b;font-family:sans-serif;font-size:10px;">Developed by Setons and Kirito</p>
                 </td></tr>
               </table>
             </td></tr>

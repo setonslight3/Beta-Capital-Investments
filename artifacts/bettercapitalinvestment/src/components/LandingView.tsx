@@ -79,6 +79,45 @@ function useLivePrices(): TickerItem[] {
   return tickers;
 }
 
+interface PlatformStats {
+  aum: string;
+  investors: string;
+  markets: string;
+  uptime: string;
+}
+
+function useLiveStats(): PlatformStats {
+  const [stats, setStats] = useState<PlatformStats>({
+    aum: '$2.4B+',
+    investors: '18,500+',
+    markets: '40+',
+    uptime: '99.9%'
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await fetch('/api/platform/stats', { credentials: 'include' }).then(r => r.json());
+        if (data && typeof data.aum === 'number') {
+          setStats({
+            aum: `$${data.aum.toLocaleString('en-US')}`,
+            investors: `${data.investors.toLocaleString('en-US')}`,
+            markets: `${data.markets}+`,
+            uptime: `${data.uptime}%`
+          });
+        }
+      } catch {
+        // Keep static fallback
+      }
+    };
+    fetchStats();
+    const id = setInterval(fetchStats, 10_000);
+    return () => clearInterval(id);
+  }, []);
+
+  return stats;
+}
+
 export default function LandingView({ onNavigate, session, onLogout, onUpdateTheme }: LandingViewProps) {
   const [showProspectus, setShowProspectus] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
@@ -90,6 +129,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
   const plansRef = useRef<HTMLElement>(null);
 
   const tickers = useLivePrices();
+  const stats = useLiveStats();
 
   // Scroll animation refs
   const [statsRef, statsVisible] = useScrollAnimation<HTMLElement>();
@@ -236,10 +276,10 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
         <section ref={statsRef} className={`py-16 px-6 md:px-16 bg-brand-bg border-y border-brand-border ${statsVisible ? '' : 'scroll-hidden'}`}>
           <div className={`max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center`}>
             {[
-              { value: '$2.4B+', label: 'Assets Under Management' },
-              { value: '18,500+', label: 'Active Investors' },
-              { value: '40+', label: 'Global Markets' },
-              { value: '99.9%', label: 'Platform Uptime' },
+              { value: stats.aum, label: 'Assets Under Management' },
+              { value: stats.investors, label: 'Active Investors' },
+              { value: stats.markets, label: 'Global Markets' },
+              { value: stats.uptime, label: 'Platform Uptime' },
             ].map((stat, index) => (
               <div key={stat.label} className={statsVisible ? (index % 2 === 0 ? 'animate-fade-in-left' : 'animate-fade-in-right') : 'scroll-hidden'} style={{ animationDelay: `${index * 100}ms` }}>
                 <div className="text-3xl md:text-4xl font-bold text-brand-gold mb-2">{stat.value}</div>
@@ -507,11 +547,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
               ))}
             </div>
           </div>
-          <div className="text-center">
-            <p className="text-brand-muted/60 text-[10px] font-sans">
-              Developed by <span className="text-brand-gold font-semibold">Setons</span> and <span className="text-brand-gold font-semibold">Kirito</span>
-            </p>
-          </div>
+
         </div>
       </footer>
 

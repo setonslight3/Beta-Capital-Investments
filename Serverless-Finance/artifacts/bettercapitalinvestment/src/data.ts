@@ -172,7 +172,7 @@ export const FAQ_ITEMS = [
 
   {
     q: 'What payment methods are accepted?',
-    a: 'We accept bank transfers (Monnify) and cryptocurrency deposits including BTC, USDT-TRC20, and USDT-ERC20. All payment methods are listed in your deposit portal.'
+    a: 'We accept bank transfers and cryptocurrency deposits including BTC, USDT-TRC20, and USDT-ERC20. All payment methods are listed in your deposit portal.'
   },
   {
     q: 'How is BetterCapitalInvestment regulated?',

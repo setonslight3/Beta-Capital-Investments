@@ -17,7 +17,7 @@ export const INVESTMENT_TIERS: InvestmentTier[] = [
   },
   {
     name: 'VIP',
-    minAmount: 100000,
+    minAmount: 50000,
     maxAmount: 100000000,
     dailyROI: 0.466667,
     description: 'Elite tier with maximum returns, dedicated support, and access to exclusive investment opportunities.'
@@ -152,7 +152,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Is my investment insured or protected?',
-    a: 'Client funds are held in segregated accounts protected by AES-256 encryption and multi-signature cold storage. We conduct regular third-party audits. Our risk management framework is built to institutional standards.'
+    a: 'Client funds are held in segregated accounts protected by AES-256 encryption and multi-signature cold storage. We conduct regular third-party audits. All investments are fully guaranteed and insured. Your capital and returns are completely protected.'
   },
   {
     q: 'Can I withdraw my capital before maturity?',

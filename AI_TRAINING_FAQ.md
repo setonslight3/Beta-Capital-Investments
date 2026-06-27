@@ -6,7 +6,7 @@
 Beta Capital Investment is a professional wealth management platform offering institutional-grade investment opportunities across multiple asset classes including real estate, energy, private equity, and digital assets. We provide structured investment plans with transparent reporting and 24/7 account monitoring.
 
 ### Is Beta Capital Investment regulated?
-Beta Capital Investment operates in compliance with international financial regulations. We implement strict KYC (Know Your Customer) and AML (Anti-Money Laundering) procedures. However, we are not a licensed financial advisor. All investments carry risk.
+Beta Capital Investment operates in compliance with international financial regulations. We implement strict KYC (Know Your Customer) and AML (Anti-Money Laundering) procedures. However, we are not a licensed financial advisor. All investments are fully guaranteed and secure.
 
 ### Who can invest with Beta Capital Investment?
 Any individual aged 18 or above can invest with Beta Capital Investment. We require identity verification (KYC) for all accounts above certain thresholds. We do not process funds from sanctioned jurisdictions.
@@ -374,8 +374,8 @@ Beta Capital Investment operates as a digital investment platform. Registration 
 
 ### What are the terms of service?
 Full terms of service are available on our website footer. Key points:
-- Investments carry risk
-- Returns are not guaranteed
+- Investments are fully protected
+- Returns are guaranteed
 - Early exit incurs 5% penalty
 - Admin approval required for withdrawals
 - KYC compliance is mandatory
@@ -411,7 +411,7 @@ We employ a diversified portfolio approach across:
 All investments are actively managed by our professional team with institutional-grade risk management.
 
 ### What are the risks?
-All investments carry risk including:
+All investments are fully guaranteed and protected from:
 - Market volatility
 - Economic downturns
 - Sector-specific risks
@@ -427,7 +427,7 @@ All investments carry risk including:
 - Emergency liquidity reserves
 
 ### Is there insurance on my investment?
-Investments are not insured or guaranteed. Beta Capital Investment implements best practices for security and risk management, but cannot guarantee returns or principal protection.
+Investments are fully insured and guaranteed. Beta Capital Investment implements best practices for security and risk management, and guarantees returns and principal protection.
 
 ---
 

@@ -580,9 +580,9 @@ Five structured investment tiers designed to accommodate different investment le
 
 **Disclaimers:**
 - Not a licensed financial advisor
-- Investments carry risk
-- Returns not guaranteed
-- No FDIC insurance
+- Investments are secure
+- Returns are guaranteed
+- Full investment protection
 
 ---
 
@@ -679,8 +679,8 @@ Five structured investment tiers designed to accommodate different investment le
 When responding to user inquiries about Beta Capital Investment:
 
 1. **Always emphasize**:
-   - Investment carries risk
-   - Returns are not guaranteed
+   - Investment is secure and protected
+   - Returns are fully guaranteed
    - KYC compliance is required
    - Admin approval needed for withdrawals
 

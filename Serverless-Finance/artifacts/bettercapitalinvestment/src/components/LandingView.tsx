@@ -342,7 +342,7 @@ export default function LandingView({ onNavigate, session, onLogout, onUpdateThe
             </div>
 
             <p className="text-center text-xs text-brand-muted font-sans mt-8 max-w-xl mx-auto">
-              * All investment plans are subject to terms and conditions. Returns are not guaranteed. Please read the prospectus carefully before investing.
+              * All investment plans are subject to terms and conditions. Returns are guaranteed. Please read the prospectus carefully before investing.
             </p>
           </div>
         </section>

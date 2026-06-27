@@ -32,7 +32,7 @@ All requested features and fixes have been implemented successfully.
 |------|-----------|-----------|-----------|
 | **Classic** | $5,000 | $24,999 | 0.25% |
 | **Pro** | $25,000 | $99,999 | 0.45% |
-| **VIP** | $100,000+ | Unlimited | 0.70% |
+| **VIP** | $50,000+ | Unlimited | 0.70% |
 
 ### Changes Made:
 - ✅ Updated `INVESTMENT_TIERS` in `src/data.ts`
@@ -235,7 +235,7 @@ pnpm run dev
 ### 3. Tier System Testing:
 - ✅ Verify Classic tier accepts $5,000 minimum
 - ✅ Verify Pro tier transitions at $25,000
-- ✅ Verify VIP tier at $100,000+
+- ✅ Verify VIP tier at $50,000+
 - ✅ Check admin dashboard tier selectors
 - ✅ Verify ROI calculations for each tier
 

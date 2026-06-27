@@ -38,7 +38,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   tier_min_silver: "10000",
   tier_min_gold: "25000",
   tier_min_platinum: "250000",
-  tier_min_diamond: "100000",
+  tier_min_diamond: "50000",
   // Tier descriptions (configurable copy)
   tier_desc_bronze: "Bronze level entry ore for establishing a strong, diversified interest stream.",
   tier_desc_silver: "Silver level growth ore with enhanced daily yields for serious portfolios.",

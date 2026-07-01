@@ -55,14 +55,14 @@ export function tierFromWealth(wealth: number): string {
   return "Bronze Ore";
 }
 
-// Email function for sending pending approval notification
-async function sendAccountPendingEmail(user: typeof usersTable.$inferSelect) {
+// Email function for sending welcome notification
+async function sendAccountWelcomeEmail(user: typeof usersTable.$inferSelect) {
   if (!resend) return;
   try {
     await resend.emails.send({
       from: EMAIL_FROM,
       to: user.email,
-      subject: "Welcome to Beta Capital Investments - Your Account is Under Review",
+      subject: "Welcome to Beta Capital Investments!",
       html: `
         <!DOCTYPE html>
         <html>
@@ -74,11 +74,10 @@ async function sendAccountPendingEmail(user: typeof usersTable.$inferSelect) {
                 <tr><td style="height:3px;background:#f2ca50;"></td></tr>
                 <tr><td style="padding:32px 40px;">
                   <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">Beta Capital Investments</p>
-                  <h1 style="margin:0 0 16px;font-size:24px;color:#e8dcc8;">Welcome! Account Under Review</h1>
-                  <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Hi ${user.fullName},</p>
-                  <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Thank you for signing up with Beta Capital Investments. Your account is currently under review by our admin team.</p>
-                  <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">We'll notify you via email once your account has been approved and you can start investing.</p>
-                  <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">This typically takes 24-48 hours. Contact support@betacapitalinvestments.com for questions.</p>
+                  <h1 style="margin:0 0 16px;font-size:24px;color:#e8dcc8;">Welcome, ${user.fullName}!</h1>
+                  <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Your account has been created successfully. You can now log in, make deposits, and start investing.</p>
+                  <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Please note that identity verification (KYC) will be required prior to making withdrawals.</p>
+                  <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">Need help? Contact support@betacapitalinvestments.com</p>
                 </td></tr>
                 <tr><td style="padding:16px 40px;border-top:1px solid #1e2d3d;">
                   <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} Beta Capital Investments. All rights reserved.</p>
@@ -91,7 +90,7 @@ async function sendAccountPendingEmail(user: typeof usersTable.$inferSelect) {
       `,
     });
   } catch (err) {
-    console.error("Failed to send pending email:", err);
+    console.error("Failed to send welcome email:", err);
   }
 }
 
@@ -139,7 +138,7 @@ export async function sendAccountApprovedEmail(user: typeof usersTable.$inferSel
 }
 
 router.post("/auth/signup", async (req: Request, res: Response) => {
-  const { email, password, fullName, phoneNumber, kycDocBase64, kycDocName, kycDocType } = req.body;
+  const { email, password, fullName, phoneNumber } = req.body;
   if (!email || !password || !fullName) {
     res.status(400).json({ message: "All fields required" });
     return;
@@ -167,7 +166,7 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
       phoneNumber: phoneNumber ?? null,
       isAdmin: admin,
       emailVerified: admin,
-      adminVerified: admin,
+      adminVerified: true, // Auto-approve users
       tier: "Bronze Ore",
       theme: "sovereign",
       biometricEnabled: false,
@@ -175,42 +174,24 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
     })
     .returning();
 
-  // Store KYC document if provided
-  if (kycDocBase64 && kycDocName && kycDocType && !admin) {
-    await db.insert(kycDocumentsTable).values({
-      userId: user.id,
-      docType: kycDocType,
-      fileDataBase64: kycDocBase64,
-      fileName: kycDocName,
-      mimeType: kycDocName.endsWith(".pdf") ? "application/pdf" : "image/jpeg",
-      status: "pending",
-    });
-  }
-
   const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   await db.insert(notificationsTable).values({
     id: notifId,
     userId: user.id,
-    title: admin ? "Welcome to Beta Capital Investment" : "Account Under Review",
-    message: admin
-      ? "Your admin account is ready. Welcome to the platform."
-      : "Your registration is complete. Our team is reviewing your account and KYC documents. You will be notified once approved.",
+    title: "Welcome to Beta Capital Investment",
+    message: "Your account is ready. Welcome to the platform. Please note that KYC is required for withdrawals.",
     timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
     read: false,
     type: "info",
   });
 
-  // Send pending approval email (non-blocking)
-  if (!admin) {
-    sendAccountPendingEmail(user).catch(err => console.error("Email send failed:", err));
-  }
+  // Send welcome email (non-blocking)
+  sendAccountWelcomeEmail(user).catch(err => console.error("Email send failed:", err));
 
-  if (admin) {
-    req.session.userId = user.id;
-    res.status(201).json(serializeUser(user));
-  } else {
-    res.status(201).json({ pending: true, email: user.email });
-  }
+  // Log in immediately
+  req.session.userId = user.id;
+  await new Promise<void>((resolve, reject) => req.session.save((err) => (err ? reject(err) : resolve())));
+  res.status(201).json(serializeUser(user));
 });
 
 router.post("/auth/login", async (req: Request, res: Response) => {

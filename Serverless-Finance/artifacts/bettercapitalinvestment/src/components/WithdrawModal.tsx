@@ -1,10 +1,11 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { X, Loader2, AlertCircle, Building2, Bitcoin, CheckCircle2 } from 'lucide-react';
+import { X, Loader2, AlertCircle, Building2, Bitcoin, CheckCircle2, Clock } from 'lucide-react';
 
 interface WithdrawModalProps {
   liquidity: number;
   onClose: () => void;
   onSuccess: (newLiquidity: number) => void;
+  onVerifyTrigger?: () => void;
 }
 
 type Method = 'bank' | 'crypto';
@@ -17,9 +18,10 @@ const ALL_METHODS: { id: Method; label: string; icon: React.ReactNode; settingKe
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n);
 
-export default function WithdrawModal({ liquidity, onClose, onSuccess }: WithdrawModalProps) {
+export default function WithdrawModal({ liquidity, onClose, onSuccess, onVerifyTrigger }: WithdrawModalProps) {
   const [methodSettings, setMethodSettings] = useState<Record<string, string>>({});
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [kycState, setKycState] = useState<'loading' | 'approved' | 'pending' | 'none'>('loading');
   const [method, setMethod] = useState<Method | null>(null);
   const [amount, setAmount] = useState('');
   const [bankName, setBankName] = useState('');
@@ -33,13 +35,20 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
   const [newBalance, setNewBalance] = useState(0);
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then(r => r.json())
-      .then(d => {
-        setMethodSettings(d ?? {});
+    Promise.all([
+      fetch('/api/settings').then(r => r.json()),
+      fetch('/api/kyc/status', { credentials: 'include' }).then(r => r.json())
+    ])
+      .then(([settingsData, kycData]) => {
+        setMethodSettings(settingsData ?? {});
+        const isApproved = Array.isArray(kycData) && kycData.some((doc: any) => doc.status === 'approved');
+        const isPending = Array.isArray(kycData) && kycData.some((doc: any) => doc.status === 'pending');
+        setKycState(isApproved ? 'approved' : isPending ? 'pending' : 'none');
         setSettingsLoaded(true);
       })
-      .catch(() => setSettingsLoaded(true));
+      .catch(() => {
+        setSettingsLoaded(true);
+      });
   }, []);
 
   const enabledMethods = ALL_METHODS.filter(m => methodSettings[m.settingKey] !== 'false');
@@ -90,11 +99,46 @@ export default function WithdrawModal({ liquidity, onClose, onSuccess }: Withdra
     }
   };
 
-  if (!settingsLoaded) {
+  if (!settingsLoaded || kycState === 'loading') {
     return (
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-md shadow-2xl p-8 flex items-center justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-brand-gold" />
+        </div>
+      </div>
+    );
+  }
+
+  if (kycState === 'pending') {
+    return (
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-md shadow-2xl p-8 text-center" onClick={e => e.stopPropagation()}>
+          <Clock className="w-10 h-10 text-brand-gold mx-auto mb-3" />
+          <p className="text-brand-text font-serif font-bold text-lg mb-2">Verification Pending</p>
+          <p className="text-brand-muted font-sans text-sm mb-5">Your identity verification document has been submitted and is currently under review by our compliance team. Withdrawals will be enabled once approved.</p>
+          <button onClick={onClose} className="bg-brand-gold text-brand-bg font-sans font-bold text-xs px-6 py-2.5 rounded uppercase tracking-widest hover:brightness-110 transition-all w-full">Close</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (kycState === 'none') {
+    return (
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-md shadow-2xl p-8 text-center" onClick={e => e.stopPropagation()}>
+          <AlertCircle className="w-10 h-10 text-brand-gold mx-auto mb-3" />
+          <p className="text-brand-text font-serif font-bold text-lg mb-2">Verification Required</p>
+          <p className="text-brand-muted font-sans text-sm mb-5">To comply with financial regulations and secure your funds, you must verify your identity before making a withdrawal.</p>
+          <button
+            onClick={() => {
+              onClose();
+              if (onVerifyTrigger) onVerifyTrigger();
+            }}
+            className="bg-brand-gold text-brand-bg font-sans font-bold text-xs px-6 py-2.5 rounded uppercase tracking-widest hover:brightness-110 transition-all w-full mb-3"
+          >
+            Verify Identity
+          </button>
+          <button onClick={onClose} className="border border-brand-border text-brand-muted font-sans text-xs px-6 py-2.5 rounded uppercase tracking-widest hover:text-brand-text hover:border-brand-gold/40 transition-all w-full">Cancel</button>
         </div>
       </div>
     );

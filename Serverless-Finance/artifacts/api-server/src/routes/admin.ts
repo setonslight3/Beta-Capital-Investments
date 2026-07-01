@@ -300,8 +300,9 @@ router.patch("/admin/payments/:id", requireAdmin, async (req: Request, res: Resp
       await db.update(usersTable).set({ liquidity: newLiquidity, tier }).where(eq(usersTable.id, payment.userId));
 
       const txId = `tx_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const txType = payment.provider === "crypto" ? "Crypto Deposit" : "Bank Deposit";
       await db.insert(transactionsTable).values({
-        id: txId, userId: payment.userId, type: "Bank Deposit", fund,
+        id: txId, userId: payment.userId, type: txType, fund,
         date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
         amount: payment.amount,
       });

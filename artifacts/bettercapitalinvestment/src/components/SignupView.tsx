@@ -1,5 +1,5 @@
 import { useState, FormEvent, useRef } from 'react';
-import { Lock, Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2, Phone, Upload, FileText, X } from 'lucide-react';
+import { Lock, Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2, Phone } from 'lucide-react';
 import { ScreenType } from '../types';
 import LogoIcon from './LogoIcon';
 import LegalModal from './LegalModal';
@@ -29,10 +29,6 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
   const [errorText, setErrorText] = useState('');
   const [loading, setLoading] = useState(false);
   const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
-  const [kycDocType, setKycDocType] = useState('passport');
-  const [kycFile, setKycFile] = useState<File | null>(null);
-  const [kycFileBase64, setKycFileBase64] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const passwordStrength = () => {
     if (!password) return { label: '', color: '', width: '0%' };
@@ -49,22 +45,6 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
     setLegalModal(type);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorText('File size must be under 5MB.');
-      return;
-    }
-    setKycFile(file);
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = (reader.result as string).split(',')[1];
-      setKycFileBase64(base64);
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorText('');
@@ -74,7 +54,6 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
     if (!password) { setErrorText('Please create a password.'); return; }
     if (password.length < 8) { setErrorText('Password must be at least 8 characters.'); return; }
     if (password !== confirmPassword) { setErrorText('Passwords do not match.'); return; }
-    if (!kycFile || !kycFileBase64) { setErrorText('Please upload a KYC identification document.'); return; }
     if (!agreed) { setErrorText('Please agree to the terms and conditions.'); return; }
 
     setLoading(true);
@@ -87,9 +66,6 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
           password,
           fullName,
           phoneNumber: phone,
-          kycDocBase64: kycFileBase64,
-          kycDocName: kycFile.name,
-          kycDocType,
         }),
         credentials: 'include',
       });
@@ -104,12 +80,7 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
         return;
       }
 
-      if (data.pending) {
-        onSignupSuccess({ pending: true, email: data.email });
-      } else {
-        // Admin user — logged in immediately
-        onSignupSuccess(data as SignupUser);
-      }
+      onSignupSuccess(data as SignupUser);
     } catch {
       setErrorText('Network error. Please try again.');
       setLoading(false);
@@ -233,48 +204,7 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
                   </div>
                 </div>
 
-                {/* KYC Document Upload */}
-                <div className="space-y-2">
-                  <label className="block text-[11px] font-sans font-semibold text-brand-muted uppercase tracking-wider">Identity Document (KYC)</label>
-                  <select
-                    value={kycDocType}
-                    onChange={e => setKycDocType(e.target.value)}
-                    className="w-full bg-brand-bg border border-brand-border py-2.5 px-3 text-brand-text text-sm focus:border-brand-gold focus:outline-none rounded-lg transition-all font-sans"
-                  >
-                    {DOC_TYPES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-                  </select>
 
-                  {kycFile ? (
-                    <div className="flex items-center gap-3 bg-brand-bg border border-brand-gold/30 rounded-lg px-3 py-2.5">
-                      <FileText className="w-4 h-4 text-brand-gold shrink-0" />
-                      <span className="text-xs font-sans text-brand-text flex-1 truncate">{kycFile.name}</span>
-                      <button
-                        type="button"
-                        onClick={() => { setKycFile(null); setKycFileBase64(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-                        className="text-brand-muted hover:text-red-400 transition-colors"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full border border-dashed border-brand-border rounded-lg py-4 px-3 flex flex-col items-center gap-2 hover:border-brand-gold/50 hover:bg-brand-gold/5 transition-all"
-                    >
-                      <Upload className="w-5 h-5 text-brand-muted" />
-                      <span className="text-xs font-sans text-brand-muted">Click to upload document</span>
-                      <span className="text-[10px] font-sans text-brand-muted/60">JPG, PNG or PDF · Max 5MB</span>
-                    </button>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/jpg,application/pdf"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </div>
 
                 {/* Terms checkbox */}
                 <div className="flex items-start gap-3">

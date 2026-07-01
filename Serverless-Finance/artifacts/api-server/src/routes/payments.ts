@@ -2,8 +2,8 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import axios from "axios";
 import crypto from "crypto";
 import { db } from "@workspace/db";
-import { paymentsTable, usersTable, transactionsTable, notificationsTable, withdrawalRequestsTable, platformSettingsTable } from "@workspace/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { paymentsTable, usersTable, transactionsTable, notificationsTable, withdrawalRequestsTable, platformSettingsTable, kycDocumentsTable } from "@workspace/db/schema";
+import { eq, desc, and } from "drizzle-orm";
 import { requireAuth } from "../lib/admin-middleware";
 import { sendEmail, withdrawalEmailHtml } from "../lib/mailer";
 import { tierFromWealth } from "./auth";
@@ -114,6 +114,16 @@ router.post("/payments/withdraw", async (req: Request, res: Response) => {
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!user) { res.status(404).json({ message: "User not found" }); return; }
+
+  // Check KYC status (except for admins)
+  if (!user.isAdmin) {
+    const kycDocs = await db.select().from(kycDocumentsTable)
+      .where(and(eq(kycDocumentsTable.userId, userId), eq(kycDocumentsTable.status, "approved")));
+    if (kycDocs.length === 0) {
+      res.status(403).json({ message: "KYC verification required before withdrawal. Please submit identity verification under Settings -> KYC." });
+      return;
+    }
+  }
 
   // Check max daily withdrawal
   const maxDaily = parseFloat(await getSetting("max_withdrawal_daily", "50000"));

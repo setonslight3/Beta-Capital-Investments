@@ -121,7 +121,7 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
       passwordHash,
       isAdmin: admin,
       emailVerified: admin,
-      accountApproved: admin, // Admins are automatically approved
+      accountApproved: true, // Auto-approve users
       tier: "Bronze Ore",
       theme: "sovereign",
       biometricEnabled: false,
@@ -134,7 +134,7 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
     id: notifId,
     userId: user.id,
     title: "Welcome to BetterCapitalInvestment",
-    message: "Your account has been created and is under review. We'll notify you once it's approved.",
+    message: "Your account has been created and is ready. Welcome to the platform. Please note that KYC is required for withdrawals.",
     timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
     read: false,
     type: "info",
@@ -142,15 +142,11 @@ router.post("/auth/signup", async (req: Request, res: Response) => {
 
   await sendWelcomeEmail(user);
 
-  // Don't log the user in immediately if not admin
-  if (admin) {
-    req.session.userId = user.id;
-  }
+  // Log in immediately
+  req.session.userId = user.id;
+  await new Promise<void>((resolve, reject) => req.session.save((err) => (err ? reject(err) : resolve())));
   
-  res.status(201).json({
-    ...serializeUser(user),
-    pendingApproval: !admin,
-  });
+  res.status(201).json(serializeUser(user));
 });
 
 router.post("/auth/login", async (req: Request, res: Response) => {

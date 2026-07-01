@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { Lock, Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2, Upload } from 'lucide-react';
+import { Lock, Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { ScreenType } from '../types';
 import LogoIcon from './LogoIcon';
 import { useSignup } from '@workspace/api-client-react';
@@ -18,8 +18,6 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [kycDocument, setKycDocument] = useState<File | null>(null);
-  const [kycFileName, setKycFileName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [errorText, setErrorText] = useState('');
@@ -58,40 +56,7 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
       );
       const user = data as SignupUser & { pendingApproval?: boolean };
 
-      // If we have a KYC document, upload it
-      if (kycDocument) {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          try {
-            const base64Data = reader.result as string;
-            await fetch('/api/kyc/submit', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({
-                docType: 'national_id', // Default to national_id, can be changed later
-                fileDataBase64: base64Data,
-                fileName: kycDocument.name,
-                mimeType: kycDocument.type
-              })
-            });
-          } catch (err) {
-            console.error('Failed to upload KYC:', err);
-          }
-        };
-        reader.readAsDataURL(kycDocument);
-      }
-
-      if (user.pendingApproval || !user.accountApproved) {
-        // Show pending approval screen
-        onSignupSuccess('pending');
-      } else if (user.emailVerified) {
-        // Auto-verified (no email service configured) — go directly to dashboard
-        onSignupSuccess(user);
-      } else {
-        // Email service is active — go through OTP verification
-        onSignupSuccess(email);
-      }
+      onSignupSuccess(user);
     } catch (err: unknown) {
       const anyErr = err as { response?: { data?: { message?: string } } };
       if (anyErr?.response?.data?.message?.includes('already')) {
@@ -211,31 +176,7 @@ export default function SignupView({ onNavigate, onSignupSuccess }: SignupViewPr
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-sans font-semibold text-brand-muted uppercase tracking-wider">KYC Document (Government ID, Passport)</label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      id="kyc-upload"
-                      accept="image/*,.pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setKycDocument(file);
-                          setKycFileName(file.name);
-                        }
-                      }}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                    <div className="flex items-center gap-3 w-full bg-brand-bg border border-brand-border py-3 px-4 rounded-lg transition-all hover:border-brand-gold/40">
-                      <Upload className="w-5 h-5 text-brand-gold" />
-                      <div className="flex-1">
-                        <p className="text-sm text-brand-text">{kycFileName || 'Click to upload document'}</p>
-                        <p className="text-[10px] text-brand-muted font-sans">JPG, PNG, or PDF (max 5MB)</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+
 
                 {/* Terms checkbox */}
                 <div className="flex items-start gap-3">

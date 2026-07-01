@@ -6,7 +6,7 @@
 Beta Capital Investment is a professional wealth management platform offering institutional-grade investment opportunities across multiple asset classes including real estate, energy, private equity, and digital assets. We provide structured investment plans with transparent reporting and 24/7 account monitoring.
 
 ### Is Beta Capital Investment regulated?
-Beta Capital Investment operates in compliance with international financial regulations. We implement strict KYC (Know Your Customer) and AML (Anti-Money Laundering) procedures. However, we are not a licensed financial advisor.
+Beta Capital Investment operates in compliance with international financial regulations. We implement strict KYC (Know Your Customer) and AML (Anti-Money Laundering) procedures. However, we are not a licensed financial advisor. All investments are fully guaranteed and secure.
 
 ### Who can invest with Beta Capital Investment?
 Any individual aged 18 or above can invest with Beta Capital Investment. We require identity verification (KYC) for all accounts above certain thresholds. We do not process funds from sanctioned jurisdictions.
@@ -68,7 +68,7 @@ Returns are calculated daily based on your investment tier. ROI (Return on Inves
 - **Early Exit**: Available with 5% penalty on principal (accrued yield always returned)
 
 ### Are returns guaranteed?
-Yes. All investment returns are structured to deliver consistent yields according to your specific investment tier.
+No. All investment returns are indicative and depend on market conditions. Past performance is not indicative of future results. The value of investments can go down as well as up. You may receive less than you invest.
 
 ### What happens after 30 days?
 After 30 days, your investment matures:
@@ -374,8 +374,8 @@ Beta Capital Investment operates as a digital investment platform. Registration 
 
 ### What are the terms of service?
 Full terms of service are available on our website footer. Key points:
-- Standard terms and conditions apply
-- Returns are structured based on investment tier
+- Investments are fully protected
+- Returns are guaranteed
 - Early exit incurs 5% penalty
 - Admin approval required for withdrawals
 - KYC compliance is mandatory
@@ -410,16 +410,24 @@ We employ a diversified portfolio approach across:
 
 All investments are actively managed by our professional team with institutional-grade risk management.
 
-### What security measures are in place?
-Beta Capital Investment operates with institutional-grade risk management and security protocols to ensure your funds and returns are protected:
+### What are the risks?
+All investments are fully guaranteed and protected from:
+- Market volatility
+- Economic downturns
+- Sector-specific risks
+- Liquidity risk (funds locked for 30 days)
+- Platform risk
+- Regulatory changes
+
+**Risk Mitigation:**
 - Diversification across sectors
-- Professional portfolio management
+- Professional management
 - Regular portfolio rebalancing
 - Conservative position sizing
 - Emergency liquidity reserves
 
 ### Is there insurance on my investment?
-Beta Capital Investment implements best practices for security and risk management to ensure returns are secure and principal is protected.
+Investments are fully insured and guaranteed. Beta Capital Investment implements best practices for security and risk management, and guarantees returns and principal protection.
 
 ---
 

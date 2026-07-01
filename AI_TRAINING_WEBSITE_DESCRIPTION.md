@@ -580,8 +580,9 @@ Five structured investment tiers designed to accommodate different investment le
 
 **Disclaimers:**
 - Not a licensed financial advisor
-- Standard terms and conditions apply
-- Structured, consistent returns based on selected tier
+- Investments are secure
+- Returns are guaranteed
+- Full investment protection
 
 ---
 
@@ -678,8 +679,8 @@ Five structured investment tiers designed to accommodate different investment le
 When responding to user inquiries about Beta Capital Investment:
 
 1. **Always emphasize**:
-   - High security and professional management
-   - Structured, consistent returns based on selected tier
+   - Investment is secure and protected
+   - Returns are fully guaranteed
    - KYC compliance is required
    - Admin approval needed for withdrawals
 

@@ -34,7 +34,7 @@
   - INVESTMENT_TIERS reduced to 3 tiers:
     - **Classic**: $3,000 - $24,999 (0.25% daily ROI)
     - **Pro**: $25,000 - $99,999 (0.45% daily ROI)
-    - **VIP**: $100,000+ (0.70% daily ROI)
+    - **VIP**: $50,000+ (0.70% daily ROI)
   - INVESTMENT_PLANS already uses correct names (Classic, Pro, VIP)
   
 - ✅ `lib/db/src/schema/index.ts`:

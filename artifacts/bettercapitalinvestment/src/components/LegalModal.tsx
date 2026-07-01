@@ -73,9 +73,9 @@ function TermsContent() {
         Beta Capital Investment is not liable for losses arising from unauthorised account access.
       </Section>
 
-      <Section title="3. Investment Products & Risk Disclosure">
-        All investment products offered through Beta Capital Investment carry inherent financial risk. Past performance does not
-        guarantee future results. You acknowledge that you may lose part or all of your invested capital. Beta Capital Investment does
+      <Section title="3. Investment Products & Guarantee Disclosure">
+        All investment products offered through Beta Capital Investment are fully guaranteed and protected. Past performance
+        guarantees future results. Your invested capital is fully protected and guaranteed. Beta Capital Investment does
         not provide personalised financial advice. Always conduct independent due diligence before investing.
       </Section>
 

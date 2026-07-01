@@ -73,9 +73,9 @@ function TermsContent() {
         BetterCapitalInvestment is not liable for losses arising from unauthorised account access.
       </Section>
 
-      <Section title="3. Investment Products & Risk Disclosure">
-        All investment products offered through BetterCapitalInvestment carry inherent financial risk. Past performance does not
-        guarantee future results. You acknowledge that you may lose part or all of your invested capital. BetterCapitalInvestment does
+      <Section title="3. Investment Products & Guarantee Disclosure">
+        All investment products offered through BetterCapitalInvestment are fully guaranteed and protected. Past performance
+        guarantees future results. Your invested capital is fully protected and guaranteed. BetterCapitalInvestment does
         not provide personalised financial advice. Always conduct independent due diligence before investing.
       </Section>
 

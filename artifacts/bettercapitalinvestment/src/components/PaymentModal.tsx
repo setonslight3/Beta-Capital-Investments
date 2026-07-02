@@ -313,11 +313,11 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-md shadow-2xl"
+        className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-md shadow-2xl max-h-[90vh] flex flex-col overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-brand-border">
+        <div className="flex items-center justify-between p-5 border-b border-brand-border shrink-0">
           <div>
             <h2 className="text-brand-text font-serif font-bold text-lg">Fund Account</h2>
             <p className="text-brand-muted font-sans text-xs mt-0.5">Choose a deposit method below</p>
@@ -328,7 +328,7 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
         </div>
 
         {/* Tabs — only enabled gateways */}
-        <div className="flex gap-1 p-3 border-b border-brand-border bg-brand-bg/40">
+        <div className="flex gap-1 p-3 border-b border-brand-border bg-brand-bg/40 shrink-0">
           {enabledTabs.map(t => (
             <button
               key={t.id}
@@ -345,7 +345,7 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
           ))}
         </div>
 
-        <div className="p-5">
+        <div className="p-5 overflow-y-auto flex-1">
           {error && (
             <div className="flex items-center gap-2 bg-red-900/30 border border-red-500/40 rounded-lg p-3 mb-4">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />

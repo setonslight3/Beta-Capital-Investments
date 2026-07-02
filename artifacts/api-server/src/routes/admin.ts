@@ -310,7 +310,7 @@ router.patch("/admin/payments/:id", requireAdmin, async (req: Request, res: Resp
   if (!payment) { res.status(404).json({ message: "Payment not found" }); return; }
 
   // Handle sending bank details for bank transfer requests
-  if (sendBankDetails && payment.provider === "bank_transfer" && payment.status === "bank_transfer_pending") {
+  if (sendBankDetails && payment.provider === "bank_transfer" && payment.status === "pending") {
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payment.userId)).limit(1);
     if (user && bankAccountDetails) {
       // Send email with bank details
@@ -333,11 +333,12 @@ router.patch("/admin/payments/:id", requireAdmin, async (req: Request, res: Resp
         type: "success",
       });
 
-      // Update payment metadata
+      // Update payment metadata to track that details were sent
+      const currentMetadata = JSON.parse(payment.metadata || "{}");
       await db.update(paymentsTable).set({
-        status: "bank_transfer_details_sent",
         metadata: JSON.stringify({
-          ...JSON.parse(payment.metadata || "{}"),
+          ...currentMetadata,
+          bankTransferStatus: "details_sent",
           detailsSentAt: new Date().toISOString(),
           detailsSentBy: req.session?.userId,
         }),

@@ -578,17 +578,41 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
           {!loading && tab === 'payments' && (
             <div className="space-y-4">
               {/* Bank Transfer Requests - Pending Details Send */}
-              {payments.filter(p => p.provider === 'bank_transfer' && p.status === 'bank_transfer_pending').length > 0 && (
+              {payments.filter(p => {
+                if (p.provider !== 'bank_transfer' || p.status !== 'pending') return false;
+                try {
+                  const meta = JSON.parse(p.metadata || '{}');
+                  return meta.bankTransferStatus === 'awaiting_details';
+                } catch {
+                  return false;
+                }
+              }).length > 0 && (
                 <div className="bg-yellow-950/20 border border-yellow-600/30 rounded-lg overflow-hidden">
                   <div className="px-4 py-3 border-b border-yellow-600/20 bg-yellow-900/20">
                     <h3 className="text-sm font-bold text-yellow-400 font-sans uppercase tracking-wider flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4" />
-                      Pending Bank Transfer Requests ({payments.filter(p => p.provider === 'bank_transfer' && p.status === 'bank_transfer_pending').length})
+                      Pending Bank Transfer Requests ({payments.filter(p => {
+                        if (p.provider !== 'bank_transfer' || p.status !== 'pending') return false;
+                        try {
+                          const meta = JSON.parse(p.metadata || '{}');
+                          return meta.bankTransferStatus === 'awaiting_details';
+                        } catch {
+                          return false;
+                        }
+                      }).length})
                     </h3>
                     <p className="text-[10px] text-brand-muted font-sans mt-0.5">Send bank account details to users who requested bank transfer deposits</p>
                   </div>
                   <div className="divide-y divide-brand-border/50">
-                    {payments.filter(p => p.provider === 'bank_transfer' && p.status === 'bank_transfer_pending').map(p => {
+                    {payments.filter(p => {
+                      if (p.provider !== 'bank_transfer' || p.status !== 'pending') return false;
+                      try {
+                        const meta = JSON.parse(p.metadata || '{}');
+                        return meta.bankTransferStatus === 'awaiting_details';
+                      } catch {
+                        return false;
+                      }
+                    }).map(p => {
                       const BankTransferRow = () => {
                         const [showForm, setShowForm] = useState(false);
                         const [bankDetails, setBankDetails] = useState({
@@ -611,12 +635,20 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                               method: 'PATCH',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({
-                                status: 'bank_transfer_details_sent',
+                                status: 'pending',
                                 sendBankDetails: true,
                                 bankAccountDetails: { ...bankDetails, reference: p.referenceId },
                               }),
                             });
-                            setPayments(prev => prev.map(payment => payment.id === p.id ? { ...payment, status: 'bank_transfer_details_sent' } : payment));
+                            // Update local state - mark as details sent
+                            setPayments(prev => prev.map(payment => {
+                              if (payment.id === p.id) {
+                                const meta = JSON.parse(payment.metadata || '{}');
+                                meta.bankTransferStatus = 'details_sent';
+                                return { ...payment, metadata: JSON.stringify(meta) };
+                              }
+                              return payment;
+                            }));
                             setShowForm(false);
                             showFeedback('Bank details sent to user via email');
                           } catch (e: any) {
@@ -759,13 +791,13 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                       <span className="text-xs text-brand-gold font-bold">{fmt(p.amount)}</span>
                       <span className={badge(p.status)}>{p.status.replace(/_/g, ' ')}</span>
                       <div className="flex gap-1.5">
-                        {p.status !== 'success' && p.status !== 'bank_transfer_pending' && p.status !== 'bank_transfer_details_sent' && (
+                        {p.status !== 'success' && p.status !== 'pending' && (
                           <button onClick={() => setPaymentStatus(p.id, 'success')}
                             className="flex items-center gap-1 bg-green-700/70 hover:bg-green-700 text-white text-[10px] px-2 py-1 rounded font-sans transition-colors">
                             <Check className="w-3 h-3" /> Approve
                           </button>
                         )}
-                        {p.status !== 'failed' && p.status !== 'success' && p.status !== 'bank_transfer_pending' && p.status !== 'bank_transfer_details_sent' && (
+                        {p.status !== 'failed' && p.status !== 'success' && p.status !== 'pending' && (
                           <button onClick={() => setPaymentStatus(p.id, 'failed')}
                             className="flex items-center gap-1 bg-red-700/70 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-sans transition-colors">
                             <X className="w-3 h-3" /> Reject

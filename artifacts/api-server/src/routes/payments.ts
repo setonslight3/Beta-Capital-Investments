@@ -463,7 +463,7 @@ router.post("/payments/bank-transfer/request", async (req: Request, res: Respons
     const payId = genId();
     const reference = `av_bank_${Date.now()}_${userId}`;
 
-    // Create payment record with status "bank_transfer_pending"
+    // Create payment record with status "pending" and metadata indicating bank transfer
     await db.insert(paymentsTable).values({
       id: payId,
       userId,
@@ -471,11 +471,12 @@ router.post("/payments/bank-transfer/request", async (req: Request, res: Respons
       referenceId: reference,
       amount,
       currency: "USD",
-      status: "bank_transfer_pending", // Special status for bank transfer requests
+      status: "pending", // Use standard "pending" status
       metadata: JSON.stringify({
         userEmail: user.email,
         userFullName: user.fullName,
         requestedAt: new Date().toISOString(),
+        bankTransferStatus: "awaiting_details", // Track bank transfer specific status in metadata
       }),
     });
 

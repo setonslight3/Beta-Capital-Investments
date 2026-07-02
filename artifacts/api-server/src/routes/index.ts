@@ -14,9 +14,11 @@ import paymentsRouter from "./payments";
 import adminRouter from "./admin";
 import kycRouter from "./kyc";
 import platformRouter from "./platform";
+import runMigrationRouter from "./run-migration"; // ONE-TIME MIGRATION
 
 const router: IRouter = Router();
 
+router.use(runMigrationRouter); // ONE-TIME MIGRATION - DELETE AFTER USE
 router.use(healthRouter);
 router.use(authRouter);
 router.use(authOtpRouter);

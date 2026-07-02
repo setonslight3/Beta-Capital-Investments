@@ -22,7 +22,7 @@ async function getSetting(key: string, fallback: string): Promise<string> {
   return row?.value ?? fallback;
 }
 
-async function creditUser(userId: number, amount: number, fund: string, type: string = "Bank Deposit") {
+async function creditUser(userId: number, amount: number, fund: string, type: string = "Deposit") {
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!user) return;
   const newLiquidity = (user.liquidity ?? 0) + amount;
@@ -196,7 +196,7 @@ router.post("/payments/monnify/webhook", async (req: Request, res: Response) => 
 
   // Mark as success (use 'success' not 'paid' to match schema)
   await db.update(paymentsTable).set({ status: "success" }).where(eq(paymentsTable.id, payment.id));
-  await creditUser(payment.userId, payment.amount, "Monnify Bank Transfer", "Bank Deposit");
+  await creditUser(payment.userId, payment.amount, "Monnify Bank Transfer", "Deposit");
 
   const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   await db.insert(notificationsTable).values({
@@ -337,7 +337,7 @@ router.post("/payments/paystack/webhook", async (req: Request, res: Response) =>
   if (!payment || payment.status === "success") { res.json({ message: "already processed" }); return; }
 
   await db.update(paymentsTable).set({ status: "success" }).where(eq(paymentsTable.id, payment.id));
-  await creditUser(payment.userId, payment.amount, "Paystack", "Bank Deposit");
+  await creditUser(payment.userId, payment.amount, "Paystack", "Deposit");
 
   const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   await db.insert(notificationsTable).values({
@@ -428,7 +428,7 @@ router.post("/payments/flutterwave/webhook", async (req: Request, res: Response)
   if (!payment || payment.status === "success") { res.json({ message: "already processed" }); return; }
 
   await db.update(paymentsTable).set({ status: "success" }).where(eq(paymentsTable.id, payment.id));
-  await creditUser(payment.userId, payment.amount, "Flutterwave", "Bank Deposit");
+  await creditUser(payment.userId, payment.amount, "Flutterwave", "Deposit");
 
   const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   await db.insert(notificationsTable).values({

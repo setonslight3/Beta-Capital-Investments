@@ -351,7 +351,7 @@ export default function DashboardView({
     if (txFilter !== "All") {
       list = list.filter((tx) => {
         if (txFilter === "ROI") return tx.type === "ROI Payout";
-        if (txFilter === "Deposit") return tx.type === "Bank Deposit" || tx.type === "Crypto Deposit";
+        if (txFilter === "Deposit") return tx.type === "Deposit" || tx.type === "Crypto Deposit";
         if (txFilter === "Withdrawal") return tx.type === "Withdrawal";
         if (txFilter === "Pledge") return tx.type === "Investment Pledge";
         return true;
@@ -371,7 +371,7 @@ export default function DashboardView({
 
   const txTypeColor = (type: string) => {
     if (type === "ROI Payout") return "text-green-400";
-    if (type === "Bank Deposit" || type === "Crypto Deposit") return "text-blue-400";
+    if (type === "Deposit" || type === "Crypto Deposit") return "text-blue-400";
     if (type === "Withdrawal" || type === "Pre-Maturity Penalty")
       return "text-red-400";
     if (type === "Investment Pledge") return "text-brand-gold";
@@ -577,8 +577,8 @@ export default function DashboardView({
                 },
                 {
                   label: "Capital (Interest)",
-                  value: summary ? fmt(summary.totalROIReceived) : "—",
-                  sub: "Interest profit earned",
+                  value: summary && 'accruedYield' in summary ? fmt((summary as any).accruedYield) : "—",
+                  sub: "Current accrued profit",
                   color: "text-green-400",
                 },
                 {

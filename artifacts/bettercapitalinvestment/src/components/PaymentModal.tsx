@@ -14,19 +14,21 @@ interface PaymentModalProps {
   onSuccess: () => void;
 }
 
-type Tab = 'paystack' | 'flutterwave' | 'monnify' | 'crypto';
-type CryptoNetwork = 'BTC' | 'USDT-TRC20' | 'USDT-ERC20' | 'ETH' | 'SOL' | 'Crypto.com';
+type Tab = 'bank-transfer' | 'paystack' | 'flutterwave' | 'monnify' | 'crypto';
+type CryptoNetwork = 'BTC' | 'ETH' | 'SOL' | 'USDT-ERC20' | 'USDT-TRC20' | 'USDT-BEP20' | 'BNB';
 
 const NETWORK_MAP: Record<CryptoNetwork, keyof CryptoAddresses> = {
   'BTC': 'btc',
-  'USDT-TRC20': 'usdtTrc20',
-  'USDT-ERC20': 'usdtErc20',
   'ETH': 'eth',
   'SOL': 'sol',
-  'Crypto.com': 'btc',
+  'USDT-TRC20': 'usdtTrc20',
+  'USDT-ERC20': 'usdtErc20',
+  'USDT-BEP20': 'usdtErc20', // Same as ERC20 for now
+  'BNB': 'btc', // Placeholder - add bnbAddress to backend if needed
 };
 
 const ALL_TABS: { id: Tab; label: string; icon: React.ReactNode; settingKey: string }[] = [
+  { id: 'bank-transfer', label: 'Bank Transfer', icon: <Building2 className="w-3.5 h-3.5" />, settingKey: 'gateway_bank_transfer_enabled' },
   { id: 'paystack', label: 'Paystack', icon: <CreditCard className="w-3.5 h-3.5" />, settingKey: 'gateway_paystack_enabled' },
   { id: 'flutterwave', label: 'Flutterwave', icon: <CreditCard className="w-3.5 h-3.5" />, settingKey: 'gateway_flutterwave_enabled' },
   { id: 'monnify', label: 'Monnify', icon: <Building2 className="w-3.5 h-3.5" />, settingKey: 'gateway_monnify_enabled' },
@@ -41,13 +43,14 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [cryptoAddresses, setCryptoAddresses] = useState<CryptoAddresses>({ btc: null, usdtTrc20: null, usdtErc20: null, eth: null, sol: null });
-  const [cryptoNetwork, setCryptoNetwork] = useState<CryptoNetwork>('Crypto.com');
+  const [cryptoNetwork, setCryptoNetwork] = useState<CryptoNetwork>('BTC');
   const [txHash, setTxHash] = useState('');
   const [copied, setCopied] = useState('');
   const [cryptoSubmitted, setCryptoSubmitted] = useState(false);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofBase64, setProofBase64] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [bankTransferStatus, setBankTransferStatus] = useState<'form' | 'pending' | 'upload'>('form');
 
   useEffect(() => {
     fetch('/api/settings')
@@ -64,7 +67,7 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
   // Global paste handler for receipt screenshots
   useEffect(() => {
     const handleGlobalPaste = (e: ClipboardEvent) => {
-      if (tab !== 'crypto') return;
+      if (tab !== 'crypto' && tab !== 'bank-transfer') return;
       const items = e.clipboardData?.items;
       if (!items) return;
       for (let i = 0; i < items.length; i++) {
@@ -330,23 +333,33 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                 </div>
               ) : (
                 <form onSubmit={handleCryptoSubmit} className="space-y-4">
-                  {/* Instructions for Crypto.com */}
+                  {/* Instructions for Crypto */}
                   <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-4 text-xs font-sans text-brand-muted leading-relaxed">
                     <p className="font-bold text-brand-text mb-1 flex items-center gap-1.5">
                       <Bitcoin className="w-4 h-4 text-brand-gold" />
-                      Deposit via Crypto.com
+                      Deposit via Crypto
                     </p>
-                    <p className="mb-3">
-                      Please make your deposit payment by transferring funds on <strong className="text-brand-text">Crypto.com</strong>.
+                    <p>
+                      Please make your payment via <strong className="text-brand-text">Crypto.com</strong>, <strong className="text-brand-text">Kraken</strong>, or any other exchange.
                     </p>
-                    <a
-                      href="https://crypto.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 bg-brand-gold/10 border border-brand-gold/30 hover:bg-brand-gold/20 text-brand-gold text-[10px] px-2.5 py-1.5  rounded font-bold transition-all uppercase tracking-wider"
+                  </div>
+
+                  {/* Crypto Selector */}
+                  <div>
+                    <label className="block text-brand-muted font-sans text-xs mb-1.5 font-semibold uppercase tracking-wider">Select Cryptocurrency</label>
+                    <select
+                      value={cryptoNetwork}
+                      onChange={e => setCryptoNetwork(e.target.value as CryptoNetwork)}
+                      className="w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60"
                     >
-                      Go to Crypto.com <ExternalLink className="w-3 h-3" />
-                    </a>
+                      <option value="BTC">Bitcoin (BTC)</option>
+                      <option value="ETH">Ethereum (ETH)</option>
+                      <option value="SOL">Solana (SOL)</option>
+                      <option value="USDT-ERC20">USDT (ERC-20)</option>
+                      <option value="USDT-TRC20">USDT (TRC-20)</option>
+                      <option value="USDT-BEP20">USDT (BEP-20)</option>
+                      <option value="BNB">BNB (Binance Coin)</option>
+                    </select>
                   </div>
 
                   <div>
@@ -408,6 +421,118 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                     className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                   >
                     {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting...</> : 'Submit Deposit'}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* Bank Transfer tab */}
+          {tab === 'bank-transfer' && (
+            <div className="space-y-4">
+              {bankTransferStatus === 'form' && (
+                <form onSubmit={(e) => { e.preventDefault(); const amt = parseAmount(); if (!amt) { setError('Enter a valid amount'); return; } setBankTransferStatus('pending'); }} className="space-y-4">
+                  <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-4 text-xs font-sans text-brand-muted leading-relaxed">
+                    <p className="font-bold text-brand-text mb-1 flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-brand-gold" />
+                      Bank Transfer Deposit
+                    </p>
+                    <p>
+                      Submit a deposit request. Admin will send you bank account details via email. After payment, upload proof to complete.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-brand-muted font-sans text-xs mb-1.5">Amount (USD)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold font-sans text-sm">$</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="any"
+                        value={amount}
+                        onChange={e => setAmount(e.target.value)}
+                        placeholder="Enter amount"
+                        className="w-full bg-brand-bg border border-brand-border rounded-lg pl-7 pr-4 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                  >
+                    {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</> : 'Send Request'}
+                  </button>
+                </form>
+              )}
+
+              {bankTransferStatus === 'pending' && (
+                <div className="text-center py-6">
+                  <CheckCircle2 className="w-12 h-12 text-brand-gold mx-auto mb-3" />
+                  <p className="text-brand-text font-serif font-bold text-lg mb-2">Request Sent!</p>
+                  <p className="text-brand-muted font-sans text-sm mb-4">Admin will send bank account details to your email shortly. Once you make the payment, return here to upload proof.</p>
+                  <button
+                    onClick={() => setBankTransferStatus('upload')}
+                    className="bg-brand-gold text-brand-bg font-sans font-bold text-xs py-2.5 px-6 rounded uppercase tracking-widest hover:brightness-110 transition-all"
+                  >
+                    Already Paid - Upload Proof
+                  </button>
+                </div>
+              )}
+
+              {bankTransferStatus === 'upload' && (
+                <form onSubmit={handleCryptoSubmit} className="space-y-4">
+                  <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-4 text-xs font-sans text-brand-muted leading-relaxed">
+                    <p className="font-bold text-brand-text mb-1">Upload Payment Proof</p>
+                    <p>Upload a screenshot or photo of your bank transfer confirmation.</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-brand-muted font-sans text-xs mb-2 uppercase tracking-wider font-semibold">Proof of Payment</label>
+                    <p className="text-[10px] text-brand-muted font-sans mb-2">Upload or paste (Ctrl+V) your payment receipt/confirmation.</p>
+
+                    {proofFile ? (
+                      <div className="flex items-center gap-3 bg-brand-bg border border-brand-gold/30 rounded-lg px-3 py-2.5">
+                        {proofFile.type.startsWith('image/') ? (
+                          <Image className="w-4 h-4 text-brand-gold shrink-0" />
+                        ) : (
+                          <FileText className="w-4 h-4 text-brand-gold shrink-0" />
+                        )}
+                        <span className="text-xs font-sans text-brand-text flex-1 truncate">{proofFile.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => { setProofFile(null); setProofBase64(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                          className="text-brand-muted hover:text-red-400 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full border border-dashed border-brand-border rounded-lg py-6 flex flex-col items-center gap-2 hover:border-brand-gold/50 hover:bg-brand-gold/5 transition-all bg-brand-bg/20"
+                      >
+                        <Upload className="w-5 h-5 text-brand-muted" />
+                        <span className="text-xs font-sans text-brand-muted">Click to upload or paste receipt screenshot</span>
+                        <span className="text-[10px] font-sans text-brand-muted/60">JPG, PNG · Max 5MB</span>
+                      </button>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/jpg"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading || !proofFile}
+                    className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                  >
+                    {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting...</> : 'Submit Proof'}
                   </button>
                 </form>
               )}

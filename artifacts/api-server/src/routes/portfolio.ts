@@ -24,15 +24,24 @@ router.get("/portfolio/summary", async (req: Request, res: Response) => {
 
   const activeInvestments = investments.filter(i => i.status === "active");
   const activePrincipal = activeInvestments.reduce((s, i) => s + i.amount, 0);
+  
+  // Current accrued yield from ALL active positions (real-time total ROI earned)
   const accruedYield = activeInvestments.reduce((s, i) => s + i.accruedYield, 0);
-  const totalROIReceived = txs.filter(t => t.type === "ROI Payout").reduce((s, t) => s + t.amount, 0);
+  
+  // Historical ROI that was already paid out via transactions
+  const totalROIPaidOut = txs.filter(t => t.type === "ROI Payout").reduce((s, t) => s + t.amount, 0);
+  
+  // Total ROI Earned = accrued (current) + already paid out (historical)
+  const totalROIEarned = accruedYield + totalROIPaidOut;
+  
   const liquidity = user?.liquidity ?? 0;
   const totalWealth = liquidity + activePrincipal + accruedYield;
 
   res.json({
     totalWealth,
     activePrincipal,
-    totalROIReceived,
+    totalROIReceived: totalROIEarned, // This now includes both accrued and paid out
+    accruedYield, // Add this for "Capital Interest" display
     liquidity,
     activeInvestmentCount: activeInvestments.length,
   });

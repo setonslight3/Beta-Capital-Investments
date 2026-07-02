@@ -490,13 +490,15 @@ components:
 
     PortfolioSummary:
       type: object
-      required: [totalWealth, activePrincipal, totalROIReceived, liquidity, activeInvestmentCount]
+      required: [totalWealth, activePrincipal, totalROIReceived, accruedYield, liquidity, activeInvestmentCount]
       properties:
         totalWealth:
           type: number
         activePrincipal:
           type: number
         totalROIReceived:
+          type: number
+        accruedYield:
           type: number
         liquidity:
           type: number

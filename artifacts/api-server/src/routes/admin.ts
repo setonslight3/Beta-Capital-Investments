@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   platform_name: "Beta Capital Investments",
   support_email: "support@betacapitalinvestments.com",
   // Gateway toggles
+  gateway_bank_transfer_enabled: "true",
   gateway_monnify_enabled: "true",
   gateway_paystack_enabled: "true",
   gateway_flutterwave_enabled: "true",
@@ -81,7 +82,7 @@ const NOTIFY_ON_CHANGE: Record<string, (oldVal: string, newVal: string) => { tit
 // ─── PUBLIC SETTINGS (no auth) ─────────────────────────────────────────────────
 
 const SAFE_KEYS = new Set([
-  "gateway_monnify_enabled", "gateway_paystack_enabled",
+  "gateway_bank_transfer_enabled", "gateway_monnify_enabled", "gateway_paystack_enabled",
   "gateway_flutterwave_enabled", "gateway_crypto_enabled",
   "withdraw_bank_enabled", "withdraw_paystack_enabled", "withdraw_crypto_enabled",
   "support_email", "social_linkedin", "social_twitter", "social_facebook", "social_instagram",
@@ -324,7 +325,7 @@ router.patch("/admin/payments/:id", requireAdmin, async (req: Request, res: Resp
       await db.update(usersTable).set({ liquidity: newLiquidity, tier }).where(eq(usersTable.id, payment.userId));
 
       const txId = `tx_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      const txType = payment.provider === "crypto" ? "Crypto Deposit" : "Bank Deposit";
+      const txType = payment.provider === "crypto" ? "Crypto Deposit" : "Deposit";
       await db.insert(transactionsTable).values({
         id: txId, userId: payment.userId, type: txType, fund,
         date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),

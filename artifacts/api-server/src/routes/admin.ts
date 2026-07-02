@@ -286,6 +286,7 @@ router.get("/admin/payments", requireAdmin, async (_req: Request, res: Response)
     provider: paymentsTable.provider,
     referenceId: paymentsTable.referenceId,
     txHash: paymentsTable.txHash,
+    proofImageBase64: paymentsTable.proofImageBase64,
     amount: paymentsTable.amount,
     currency: paymentsTable.currency,
     status: paymentsTable.status,

@@ -183,3 +183,75 @@ export function accountFrozenEmailHtml(name: string, reason?: string): string {
 </body>
 </html>`;
 }
+
+export function bankTransferDetailsEmailHtml(name: string, amount: string, bankDetails: { bankName: string; accountName: string; accountNumber: string; routingNumber?: string; swiftCode?: string; reference: string }): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/></head>
+<body style="margin:0;padding:0;background:#0d1419;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+    <tr><td align="center">
+      <table width="580" cellpadding="0" cellspacing="0" style="background:#131d26;border:1px solid #1e2d3d;border-radius:8px;overflow:hidden;">
+        <tr><td style="height:3px;background:#f2ca50;"></td></tr>
+        <tr><td style="padding:32px 40px;">
+          <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#e8dcc8;letter-spacing:2px;text-transform:uppercase;">Beta Capital Investments</p>
+          <h1 style="margin:0 0 16px;font-size:24px;color:#e8dcc8;">Bank Transfer Details</h1>
+          <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Hi ${name},</p>
+          <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Please use the following bank account details to complete your deposit of <strong style="color:#f2ca50;">${amount}</strong>:</p>
+          
+          <div style="margin:24px 0;background:#0d1419;border:1px solid #1e2d3d;border-radius:6px;padding:20px;">
+            <table width="100%" cellpadding="8" cellspacing="0">
+              <tr>
+                <td style="color:#6b7a8f;font-family:sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;padding-bottom:4px;">Bank Name</td>
+                <td style="color:#e8dcc8;font-family:monospace;font-size:14px;text-align:right;padding-bottom:4px;">${bankDetails.bankName}</td>
+              </tr>
+              <tr>
+                <td style="color:#6b7a8f;font-family:sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;padding-bottom:4px;">Account Name</td>
+                <td style="color:#e8dcc8;font-family:monospace;font-size:14px;text-align:right;padding-bottom:4px;">${bankDetails.accountName}</td>
+              </tr>
+              <tr>
+                <td style="color:#6b7a8f;font-family:sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;padding-bottom:4px;">Account Number</td>
+                <td style="color:#f2ca50;font-family:monospace;font-size:16px;font-weight:700;text-align:right;padding-bottom:4px;">${bankDetails.accountNumber}</td>
+              </tr>
+              ${bankDetails.routingNumber ? `<tr>
+                <td style="color:#6b7a8f;font-family:sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;padding-bottom:4px;">Routing Number</td>
+                <td style="color:#e8dcc8;font-family:monospace;font-size:14px;text-align:right;padding-bottom:4px;">${bankDetails.routingNumber}</td>
+              </tr>` : ''}
+              ${bankDetails.swiftCode ? `<tr>
+                <td style="color:#6b7a8f;font-family:sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;padding-bottom:4px;">SWIFT/BIC Code</td>
+                <td style="color:#e8dcc8;font-family:monospace;font-size:14px;text-align:right;padding-bottom:4px;">${bankDetails.swiftCode}</td>
+              </tr>` : ''}
+              <tr>
+                <td colspan="2" style="padding-top:12px;border-top:1px solid #1e2d3d;">
+                  <p style="margin:8px 0 4px;color:#6b7a8f;font-family:sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:700;">Payment Reference</p>
+                  <p style="margin:0;color:#f2ca50;font-family:monospace;font-size:14px;font-weight:700;">${bankDetails.reference}</p>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin:20px 0;background:#1a2534;border-left:3px solid #f2ca50;padding:16px;">
+            <p style="margin:0 0 8px;color:#f2ca50;font-family:sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">⚠️ Important</p>
+            <p style="margin:0;color:#8a9ab5;font-family:sans-serif;font-size:13px;line-height:1.6;">Please include the <strong style="color:#e8dcc8;">Payment Reference</strong> in your bank transfer. This helps us identify and process your deposit quickly.</p>
+          </div>
+
+          <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">After making the payment:</p>
+          <ol style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.8;padding-left:20px;">
+            <li>Take a screenshot or photo of the payment confirmation</li>
+            <li>Return to the deposit page in your dashboard</li>
+            <li>Click "Already Paid" and upload your proof of payment</li>
+          </ol>
+
+          <p style="color:#8a9ab5;font-family:sans-serif;font-size:14px;line-height:1.6;">Your deposit will be credited within <strong style="color:#e8dcc8;">1-3 business hours</strong> after we verify your payment.</p>
+          
+          <p style="color:#4a5a6b;font-family:sans-serif;font-size:11px;margin-top:24px;">Questions? Contact support@betacapitalinvestments.com</p>
+        </td></tr>
+        <tr><td style="padding:16px 40px;border-top:1px solid #1e2d3d;">
+          <p style="margin:0;color:#4a5a6b;font-family:sans-serif;font-size:11px;">&copy; ${new Date().getFullYear()} Beta Capital Investments. All rights reserved.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}

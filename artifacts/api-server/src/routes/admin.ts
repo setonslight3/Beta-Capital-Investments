@@ -302,17 +302,56 @@ router.get("/admin/payments", requireAdmin, async (_req: Request, res: Response)
 
 router.patch("/admin/payments/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = String(req.params.id);
-  const { status, adminNote } = req.body;
+  const { status, adminNote, sendBankDetails, bankAccountDetails } = req.body;
   if (!status) { res.status(400).json({ message: "status required" }); return; }
 
   const [payment] = await db.select().from(paymentsTable).where(eq(paymentsTable.id, id)).limit(1);
   if (!payment) { res.status(404).json({ message: "Payment not found" }); return; }
 
+  // Handle sending bank details for bank transfer requests
+  if (sendBankDetails && payment.provider === "bank_transfer" && payment.status === "bank_transfer_pending") {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payment.userId)).limit(1);
+    if (user && bankAccountDetails) {
+      // Send email with bank details
+      const { bankTransferDetailsEmailHtml } = await import("../lib/mailer");
+      await sendEmail(
+        user.email,
+        "Bank Transfer Details - Beta Capital Investment",
+        bankTransferDetailsEmailHtml(user.fullName, fmt(payment.amount), bankAccountDetails)
+      ).catch(err => console.error("Failed to send bank details email:", err));
+
+      // Create notification
+      const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      await db.insert(notificationsTable).values({
+        id: notifId,
+        userId: payment.userId,
+        title: "Bank Account Details Sent",
+        message: `Bank account details for your ${fmt(payment.amount)} deposit have been sent to your email. Please make the payment and upload proof.`,
+        timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+        read: false,
+        type: "success",
+      });
+
+      // Update payment metadata
+      await db.update(paymentsTable).set({
+        status: "bank_transfer_details_sent",
+        metadata: JSON.stringify({
+          ...JSON.parse(payment.metadata || "{}"),
+          detailsSentAt: new Date().toISOString(),
+          detailsSentBy: req.session?.userId,
+        }),
+      }).where(eq(paymentsTable.id, id));
+
+      res.json({ message: "Bank details sent successfully" });
+      return;
+    }
+  }
+
   const [updated] = await db.update(paymentsTable).set({ status }).where(eq(paymentsTable.id, id)).returning();
 
   if (status === "success" && payment.status !== "success") {
     const network = payment.metadata ? (JSON.parse(payment.metadata).network ?? "Crypto") : "Crypto";
-    const fund = payment.provider === "crypto" ? `Crypto (${network})` : payment.provider;
+    const fund = payment.provider === "crypto" ? `Crypto (${network})` : payment.provider === "bank_transfer" ? "Bank Transfer" : payment.provider;
 
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payment.userId)).limit(1);
     if (user) {

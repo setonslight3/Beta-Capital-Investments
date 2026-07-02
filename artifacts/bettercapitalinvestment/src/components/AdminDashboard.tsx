@@ -577,6 +577,157 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
           {/* ── PAYMENTS ── */}
           {!loading && tab === 'payments' && (
             <div className="space-y-4">
+              {/* Bank Transfer Requests - Pending Details Send */}
+              {payments.filter(p => p.provider === 'bank_transfer' && p.status === 'bank_transfer_pending').length > 0 && (
+                <div className="bg-yellow-950/20 border border-yellow-600/30 rounded-lg overflow-hidden">
+                  <div className="px-4 py-3 border-b border-yellow-600/20 bg-yellow-900/20">
+                    <h3 className="text-sm font-bold text-yellow-400 font-sans uppercase tracking-wider flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Pending Bank Transfer Requests ({payments.filter(p => p.provider === 'bank_transfer' && p.status === 'bank_transfer_pending').length})
+                    </h3>
+                    <p className="text-[10px] text-brand-muted font-sans mt-0.5">Send bank account details to users who requested bank transfer deposits</p>
+                  </div>
+                  <div className="divide-y divide-brand-border/50">
+                    {payments.filter(p => p.provider === 'bank_transfer' && p.status === 'bank_transfer_pending').map(p => {
+                      const BankTransferRow = () => {
+                        const [showForm, setShowForm] = useState(false);
+                        const [bankDetails, setBankDetails] = useState({
+                          bankName: '',
+                          accountName: '',
+                          accountNumber: '',
+                          routingNumber: '',
+                          swiftCode: '',
+                        });
+                        const [sending, setSending] = useState(false);
+
+                        const handleSend = async () => {
+                          if (!bankDetails.bankName || !bankDetails.accountName || !bankDetails.accountNumber) {
+                            setError('Bank name, account name, and account number are required');
+                            return;
+                          }
+                          setSending(true);
+                          try {
+                            await apiFetch(`/admin/payments/${p.id}`, {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                status: 'bank_transfer_details_sent',
+                                sendBankDetails: true,
+                                bankAccountDetails: { ...bankDetails, reference: p.referenceId },
+                              }),
+                            });
+                            setPayments(prev => prev.map(payment => payment.id === p.id ? { ...payment, status: 'bank_transfer_details_sent' } : payment));
+                            setShowForm(false);
+                            showFeedback('Bank details sent to user via email');
+                          } catch (e: any) {
+                            setError(e.message ?? 'Failed to send bank details');
+                          } finally {
+                            setSending(false);
+                          }
+                        };
+
+                        return (
+                          <div className="px-4 py-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <div className="text-sm font-bold text-brand-text">{p.userFullName}</div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-xs text-brand-muted font-sans">{p.userEmail}</span>
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(p.userEmail);
+                                      showFeedback('Email copied');
+                                    }}
+                                    className="text-brand-gold hover:text-brand-gold/80 transition-colors"
+                                    title="Copy email"
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                  </button>
+                                </div>
+                                <div className="text-[10px] text-brand-muted font-sans mt-1">
+                                  Requested: {new Date(p.createdAt).toLocaleString()}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-lg font-bold text-green-400">{fmt(p.amount)}</div>
+                                <div className="text-[10px] text-brand-muted font-sans uppercase tracking-wider">USD</div>
+                              </div>
+                            </div>
+
+                            {!showForm ? (
+                              <button
+                                onClick={() => setShowForm(true)}
+                                className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-2.5 rounded uppercase tracking-widest hover:brightness-110 transition-all"
+                              >
+                                Send Bank Account Details
+                              </button>
+                            ) : (
+                              <div className="space-y-3 bg-brand-bg/60 border border-brand-border rounded-lg p-4">
+                                <h4 className="text-xs font-bold text-brand-text font-sans uppercase tracking-wider mb-2">Bank Account Details Form</h4>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <input
+                                    className={inputCls}
+                                    placeholder="Bank Name *"
+                                    value={bankDetails.bankName}
+                                    onChange={e => setBankDetails(prev => ({ ...prev, bankName: e.target.value }))}
+                                  />
+                                  <input
+                                    className={inputCls}
+                                    placeholder="Account Name *"
+                                    value={bankDetails.accountName}
+                                    onChange={e => setBankDetails(prev => ({ ...prev, accountName: e.target.value }))}
+                                  />
+                                  <input
+                                    className={inputCls}
+                                    placeholder="Account Number *"
+                                    value={bankDetails.accountNumber}
+                                    onChange={e => setBankDetails(prev => ({ ...prev, accountNumber: e.target.value }))}
+                                  />
+                                  <input
+                                    className={inputCls}
+                                    placeholder="Routing Number (optional)"
+                                    value={bankDetails.routingNumber}
+                                    onChange={e => setBankDetails(prev => ({ ...prev, routingNumber: e.target.value }))}
+                                  />
+                                  <input
+                                    className={`${inputCls} col-span-2`}
+                                    placeholder="SWIFT/BIC Code (optional)"
+                                    value={bankDetails.swiftCode}
+                                    onChange={e => setBankDetails(prev => ({ ...prev, swiftCode: e.target.value }))}
+                                  />
+                                </div>
+                                <div className="bg-brand-bg/80 border border-brand-border/60 rounded p-2 text-[10px] text-brand-muted font-sans">
+                                  <strong className="text-brand-text">Payment Reference:</strong> {p.referenceId}
+                                  <br />
+                                  <span className="text-brand-muted/80">This reference will be included in the email for tracking</span>
+                                </div>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={handleSend}
+                                    disabled={sending}
+                                    className="flex-1 bg-green-700 text-white font-sans font-bold text-xs py-2 rounded hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                                  >
+                                    {sending ? <><Loader2 className="w-3 h-3 animate-spin" /> Sending...</> : 'Send Details via Email'}
+                                  </button>
+                                  <button
+                                    onClick={() => setShowForm(false)}
+                                    className="px-4 border border-brand-border text-brand-muted text-xs rounded font-sans hover:text-brand-text transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      };
+                      return <BankTransferRow key={p.id} />;
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* All Payments Table */}
               <div className="bg-brand-surface border border-brand-border rounded-lg overflow-hidden">
                 <div className="grid grid-cols-6 gap-3 px-4 py-3 border-b border-brand-border text-[10px] font-sans uppercase tracking-wider text-brand-muted">
                   <span className="col-span-2">User / Ref</span>
@@ -604,17 +755,17 @@ export default function AdminDashboard({ onNavigate, session, onLogout }: AdminD
                           </button>
                         )}
                       </div>
-                      <span className={`text-[10px] font-sans font-bold uppercase ${p.provider === 'crypto' ? 'text-yellow-400' : 'text-brand-muted'}`}>{p.provider}</span>
+                      <span className={`text-[10px] font-sans font-bold uppercase ${p.provider === 'crypto' ? 'text-yellow-400' : p.provider === 'bank_transfer' ? 'text-blue-400' : 'text-brand-muted'}`}>{p.provider}</span>
                       <span className="text-xs text-brand-gold font-bold">{fmt(p.amount)}</span>
-                      <span className={badge(p.status)}>{p.status.replace('_', ' ')}</span>
+                      <span className={badge(p.status)}>{p.status.replace(/_/g, ' ')}</span>
                       <div className="flex gap-1.5">
-                        {p.status !== 'success' && (
+                        {p.status !== 'success' && p.status !== 'bank_transfer_pending' && p.status !== 'bank_transfer_details_sent' && (
                           <button onClick={() => setPaymentStatus(p.id, 'success')}
                             className="flex items-center gap-1 bg-green-700/70 hover:bg-green-700 text-white text-[10px] px-2 py-1 rounded font-sans transition-colors">
                             <Check className="w-3 h-3" /> Approve
                           </button>
                         )}
-                        {p.status !== 'failed' && p.status !== 'success' && (
+                        {p.status !== 'failed' && p.status !== 'success' && p.status !== 'bank_transfer_pending' && p.status !== 'bank_transfer_details_sent' && (
                           <button onClick={() => setPaymentStatus(p.id, 'failed')}
                             className="flex items-center gap-1 bg-red-700/70 hover:bg-red-700 text-white text-[10px] px-2 py-1 rounded font-sans transition-colors">
                             <X className="w-3 h-3" /> Reject

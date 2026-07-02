@@ -190,6 +190,72 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
     reader.readAsDataURL(file);
   };
 
+  const handleBankTransferRequest = async () => {
+    const amt = parseAmount();
+    if (!amt) { setError('Enter a valid amount'); return; }
+    
+    setLoading(true);
+    setError('');
+    try {
+      const r = await fetch('/api/payments/bank-transfer/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amt }),
+        credentials: 'include',
+      });
+      const data = await r.json();
+      if (!r.ok) { 
+        setError(data.message ?? 'Request failed'); 
+        setLoading(false); 
+        return; 
+      }
+      
+      // Store payment ID for later proof upload
+      sessionStorage.setItem('bankTransferPaymentId', data.paymentId);
+      setBankTransferStatus('pending');
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBankTransferProofSubmit = async () => {
+    if (!proofBase64) { setError('Please upload payment proof'); return; }
+    
+    const paymentId = sessionStorage.getItem('bankTransferPaymentId');
+    if (!paymentId) { setError('Payment ID not found. Please start over.'); return; }
+    
+    setLoading(true);
+    setError('');
+    try {
+      const r = await fetch('/api/payments/bank-transfer/submit-proof', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentId,
+          proofImageBase64: proofBase64,
+          proofImageName: proofFile ? proofFile.name : null,
+        }),
+        credentials: 'include',
+      });
+      const data = await r.json();
+      if (!r.ok) { 
+        setError(data.message ?? 'Submission failed'); 
+        setLoading(false); 
+        return; 
+      }
+      
+      sessionStorage.removeItem('bankTransferPaymentId');
+      onSuccess();
+      onClose();
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCryptoSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const amt = parseAmount();
@@ -431,7 +497,7 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
           {tab === 'bank-transfer' && (
             <div className="space-y-4">
               {bankTransferStatus === 'form' && (
-                <form onSubmit={(e) => { e.preventDefault(); const amt = parseAmount(); if (!amt) { setError('Enter a valid amount'); return; } setBankTransferStatus('pending'); }} className="space-y-4">
+                <div className="space-y-4">
                   <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-4 text-xs font-sans text-brand-muted leading-relaxed">
                     <p className="font-bold text-brand-text mb-1 flex items-center gap-1.5">
                       <Building2 className="w-4 h-4 text-brand-gold" />
@@ -457,13 +523,13 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                     </div>
                   </div>
                   <button
-                    type="submit"
-                    disabled={loading}
+                    onClick={handleBankTransferRequest}
+                    disabled={loading || !parseAmount()}
                     className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                   >
                     {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</> : 'Send Request'}
                   </button>
-                </form>
+                </div>
               )}
 
               {bankTransferStatus === 'pending' && (
@@ -481,7 +547,7 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
               )}
 
               {bankTransferStatus === 'upload' && (
-                <form onSubmit={handleCryptoSubmit} className="space-y-4">
+                <div className="space-y-4">
                   <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-4 text-xs font-sans text-brand-muted leading-relaxed">
                     <p className="font-bold text-brand-text mb-1">Upload Payment Proof</p>
                     <p>Upload a screenshot or photo of your bank transfer confirmation.</p>
@@ -528,13 +594,13 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
                   </div>
 
                   <button
-                    type="submit"
+                    onClick={handleBankTransferProofSubmit}
                     disabled={loading || !proofFile}
                     className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                   >
                     {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting...</> : 'Submit Proof'}
                   </button>
-                </form>
+                </div>
               )}
             </div>
           )}

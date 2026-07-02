@@ -441,6 +441,112 @@ router.post("/payments/flutterwave/webhook", async (req: Request, res: Response)
   res.json({ message: "processed" });
 });
 
+// ─── BANK TRANSFER DEPOSITS ────────────────────────────────────────────────────
+
+router.post("/payments/bank-transfer/request", async (req: Request, res: Response) => {
+  const userId = requireAuth(req, res);
+  if (!userId) return;
+
+  const { amount } = req.body;
+  if (!amount || amount <= 0) {
+    res.status(400).json({ message: "Valid amount required" });
+    return;
+  }
+
+  try {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const payId = genId();
+    const reference = `av_bank_${Date.now()}_${userId}`;
+
+    // Create payment record with status "bank_transfer_pending"
+    await db.insert(paymentsTable).values({
+      id: payId,
+      userId,
+      provider: "bank_transfer",
+      referenceId: reference,
+      amount,
+      currency: "USD",
+      status: "bank_transfer_pending", // Special status for bank transfer requests
+      metadata: JSON.stringify({
+        userEmail: user.email,
+        userFullName: user.fullName,
+        requestedAt: new Date().toISOString(),
+      }),
+    });
+
+    // Notify user
+    const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    await db.insert(notificationsTable).values({
+      id: notifId,
+      userId,
+      title: "Bank Transfer Request Received",
+      message: `Your request for ${fmt(amount)} has been submitted. Admin will send bank account details to your email shortly.`,
+      timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+      read: false,
+      type: "info",
+    });
+
+    req.log.info({ paymentId: payId, userId, amount }, "Bank transfer request created");
+    res.status(201).json({ message: "Request submitted successfully", paymentId: payId, reference });
+  } catch (err) {
+    req.log.error({ err, userId, amount }, "Bank transfer request failed");
+    res.status(500).json({ message: "Failed to submit request" });
+  }
+});
+
+router.post("/payments/bank-transfer/submit-proof", async (req: Request, res: Response) => {
+  const userId = requireAuth(req, res);
+  if (!userId) return;
+
+  const { paymentId, proofImageBase64, proofImageName } = req.body;
+  if (!paymentId || !proofImageBase64) {
+    res.status(400).json({ message: "paymentId and proofImageBase64 required" });
+    return;
+  }
+
+  try {
+    const [payment] = await db.select().from(paymentsTable).where(eq(paymentsTable.id, paymentId)).limit(1);
+    if (!payment || payment.userId !== userId) {
+      res.status(404).json({ message: "Payment not found" });
+      return;
+    }
+
+    // Update payment with proof and change status to manual_review
+    await db.update(paymentsTable).set({
+      proofImageBase64,
+      status: "manual_review",
+      metadata: JSON.stringify({
+        ...JSON.parse(payment.metadata || "{}"),
+        proofUploadedAt: new Date().toISOString(),
+        proofFileName: proofImageName,
+      }),
+    }).where(eq(paymentsTable.id, paymentId));
+
+    // Notify user
+    const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    await db.insert(notificationsTable).values({
+      id: notifId,
+      userId,
+      title: "Payment Proof Submitted",
+      message: `Your payment proof for ${fmt(payment.amount)} has been submitted and is under review.`,
+      timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+      read: false,
+      type: "info",
+    });
+
+    req.log.info({ paymentId, userId }, "Bank transfer proof submitted");
+    res.json({ message: "Proof submitted successfully" });
+  } catch (err) {
+    req.log.error({ err, paymentId }, "Failed to submit proof");
+    res.status(500).json({ message: "Failed to submit proof" });
+  }
+});
+
 // ─── CRYPTO DEPOSITS ───────────────────────────────────────────────────────────
 
 router.get("/payments/crypto/addresses", async (_req: Request, res: Response) => {

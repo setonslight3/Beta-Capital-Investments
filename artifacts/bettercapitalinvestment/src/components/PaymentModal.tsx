@@ -496,112 +496,121 @@ export default function PaymentModal({ onClose, onSuccess }: PaymentModalProps) 
           {/* Bank Transfer tab */}
           {tab === 'bank-transfer' && (
             <div className="space-y-4">
-              {bankTransferStatus === 'form' && (
-                <div className="space-y-4">
-                  <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-4 text-xs font-sans text-brand-muted leading-relaxed">
-                    <p className="font-bold text-brand-text mb-1 flex items-center gap-1.5">
-                      <Building2 className="w-4 h-4 text-brand-gold" />
-                      Bank Transfer Deposit
-                    </p>
-                    <p>
-                      Submit a deposit request. Admin will send you bank account details via email. After payment, upload proof to complete.
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-brand-muted font-sans text-xs mb-1.5">Amount (USD)</label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold font-sans text-sm">$</span>
-                      <input
-                        type="number"
-                        min="1"
-                        step="any"
-                        value={amount}
-                        onChange={e => setAmount(e.target.value)}
-                        placeholder="Enter amount"
-                        className="w-full bg-brand-bg border border-brand-border rounded-lg pl-7 pr-4 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleBankTransferRequest}
-                    disabled={loading || !parseAmount()}
-                    className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</> : 'Send Request'}
-                  </button>
+              {/* Request Form - Always at top */}
+              <div className="space-y-4">
+                <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-4 text-xs font-sans text-brand-muted leading-relaxed">
+                  <p className="font-bold text-brand-text mb-1 flex items-center gap-1.5">
+                    <Building2 className="w-4 h-4 text-brand-gold" />
+                    Bank Transfer Deposit
+                  </p>
+                  <p>
+                    Submit a deposit request. Admin will send you bank account details via email. After payment, scroll down to upload proof.
+                  </p>
                 </div>
-              )}
-
-              {bankTransferStatus === 'pending' && (
-                <div className="text-center py-6">
-                  <CheckCircle2 className="w-12 h-12 text-brand-gold mx-auto mb-3" />
-                  <p className="text-brand-text font-serif font-bold text-lg mb-2">Request Sent!</p>
-                  <p className="text-brand-muted font-sans text-sm mb-4">Admin will send bank account details to your email shortly. Once you make the payment, return here to upload proof.</p>
-                  <button
-                    onClick={() => setBankTransferStatus('upload')}
-                    className="bg-brand-gold text-brand-bg font-sans font-bold text-xs py-2.5 px-6 rounded uppercase tracking-widest hover:brightness-110 transition-all"
-                  >
-                    Already Paid - Upload Proof
-                  </button>
-                </div>
-              )}
-
-              {bankTransferStatus === 'upload' && (
-                <div className="space-y-4">
-                  <div className="bg-brand-bg/60 border border-brand-border/60 rounded-lg p-4 text-xs font-sans text-brand-muted leading-relaxed">
-                    <p className="font-bold text-brand-text mb-1">Upload Payment Proof</p>
-                    <p>Upload a screenshot or photo of your bank transfer confirmation.</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-brand-muted font-sans text-xs mb-2 uppercase tracking-wider font-semibold">Proof of Payment</label>
-                    <p className="text-[10px] text-brand-muted font-sans mb-2">Upload or paste (Ctrl+V) your payment receipt/confirmation.</p>
-
-                    {proofFile ? (
-                      <div className="flex items-center gap-3 bg-brand-bg border border-brand-gold/30 rounded-lg px-3 py-2.5">
-                        {proofFile.type.startsWith('image/') ? (
-                          <Image className="w-4 h-4 text-brand-gold shrink-0" />
-                        ) : (
-                          <FileText className="w-4 h-4 text-brand-gold shrink-0" />
-                        )}
-                        <span className="text-xs font-sans text-brand-text flex-1 truncate">{proofFile.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => { setProofFile(null); setProofBase64(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-                          className="text-brand-muted hover:text-red-400 transition-colors"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full border border-dashed border-brand-border rounded-lg py-6 flex flex-col items-center gap-2 hover:border-brand-gold/50 hover:bg-brand-gold/5 transition-all bg-brand-bg/20"
-                      >
-                        <Upload className="w-5 h-5 text-brand-muted" />
-                        <span className="text-xs font-sans text-brand-muted">Click to upload or paste receipt screenshot</span>
-                        <span className="text-[10px] font-sans text-brand-muted/60">JPG, PNG · Max 5MB</span>
-                      </button>
-                    )}
+                <div>
+                  <label className="block text-brand-muted font-sans text-xs mb-1.5">Amount (USD)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gold font-bold font-sans text-sm">$</span>
                     <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/jpg"
-                      onChange={handleFileChange}
-                      className="hidden"
+                      type="number"
+                      min="1"
+                      step="any"
+                      value={amount}
+                      onChange={e => setAmount(e.target.value)}
+                      placeholder="Enter amount"
+                      className="w-full bg-brand-bg border border-brand-border rounded-lg pl-7 pr-4 py-2.5 text-brand-text font-sans text-sm focus:outline-none focus:border-brand-gold/60"
                     />
                   </div>
+                </div>
+                <button
+                  onClick={handleBankTransferRequest}
+                  disabled={loading || !parseAmount()}
+                  className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</> : 'Send Request'}
+                </button>
+              </div>
 
-                  <button
-                    onClick={handleBankTransferProofSubmit}
-                    disabled={loading || !proofFile}
-                    className="w-full bg-brand-gold text-brand-bg font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting...</> : 'Submit Proof'}
-                  </button>
+              {/* Status Message */}
+              {bankTransferStatus === 'pending' && (
+                <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-green-300 font-sans font-bold text-sm mb-1">Request Sent!</p>
+                      <p className="text-green-200/80 font-sans text-xs">Admin will send bank account details to your email shortly. Once you make the payment, scroll down to upload proof below.</p>
+                    </div>
+                  </div>
                 </div>
               )}
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-brand-border"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-brand-surface px-2 text-brand-muted font-sans">Or</span>
+                </div>
+              </div>
+
+              {/* Upload Proof Section - Always visible at bottom */}
+              <div className="space-y-4">
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 text-xs font-sans text-blue-200 leading-relaxed">
+                  <p className="font-bold text-blue-300 mb-1">Already Made Payment?</p>
+                  <p>
+                    If you've already received bank details and made the payment, upload your proof of payment below.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-brand-muted font-sans text-xs mb-2 uppercase tracking-wider font-semibold">Proof of Payment</label>
+                  <p className="text-[10px] text-brand-muted font-sans mb-2">Upload or paste (Ctrl+V) your payment receipt/confirmation.</p>
+
+                  {proofFile ? (
+                    <div className="flex items-center gap-3 bg-brand-bg border border-brand-gold/30 rounded-lg px-3 py-2.5">
+                      {proofFile.type.startsWith('image/') ? (
+                        <Image className="w-4 h-4 text-brand-gold shrink-0" />
+                      ) : (
+                        <FileText className="w-4 h-4 text-brand-gold shrink-0" />
+                      )}
+                      <span className="text-xs font-sans text-brand-text flex-1 truncate">{proofFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => { setProofFile(null); setProofBase64(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                        className="text-brand-muted hover:text-red-400 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full border border-dashed border-brand-border rounded-lg py-6 flex flex-col items-center gap-2 hover:border-brand-gold/50 hover:bg-brand-gold/5 transition-all bg-brand-bg/20"
+                    >
+                      <Upload className="w-5 h-5 text-brand-muted" />
+                      <span className="text-xs font-sans text-brand-muted">Click to upload or paste receipt screenshot</span>
+                      <span className="text-[10px] font-sans text-brand-muted/60">JPG, PNG · Max 5MB</span>
+                    </button>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/jpg"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </div>
+
+                <button
+                  onClick={handleBankTransferProofSubmit}
+                  disabled={loading || !proofFile}
+                  className="w-full bg-green-700 text-white font-sans font-bold text-xs py-3 rounded uppercase tracking-widest hover:bg-green-600 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Submitting...</> : 'Submit Proof'}
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -101,21 +101,94 @@ async function creditUserWithROI(userId: number, investmentId: string, principal
   });
 }
 
-// Process auto-ROI for a specific user synchronously
-export async function processAutoROIForUser(userId: number) {
-  const rows = await db.select().from(investmentsTable).where(and(eq(investmentsTable.userId, userId), eq(investmentsTable.status, "active")));
-  for (const r of rows) {
-    const calculated = calculateAutoROI(r);
-    await syncInvestmentIfNeeded(r, calculated);
+// Helper to refund missing principal for previously completed investments
+async function checkAndRefundMissingPrincipal(r: any) {
+  const refundFundName = `${r.sectorTitle} Principal Refund`;
+  
+  const existingRefundTx = await db
+    .select()
+    .from(transactionsTable)
+    .where(and(
+      eq(transactionsTable.userId, r.userId),
+      eq(transactionsTable.fund, refundFundName)
+    ))
+    .limit(1);
+
+  if (existingRefundTx.length > 0) {
+    return; // Already refunded
+  }
+
+  const oldRoiTxs = await db
+    .select()
+    .from(transactionsTable)
+    .where(and(
+      eq(transactionsTable.userId, r.userId),
+      eq(transactionsTable.type, "ROI Payout"),
+      eq(transactionsTable.fund, r.sectorTitle)
+    ));
+
+  // Check if payout included total amount (principal + yield)
+  const hasFullPayoutTx = oldRoiTxs.some(t => t.amount >= (r.amount + r.accruedYield - 0.01));
+
+  if (!hasFullPayoutTx) {
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, r.userId)).limit(1);
+    if (user) {
+      const newLiquidity = (user.liquidity ?? 0) + r.amount;
+      await db.update(usersTable).set({ liquidity: newLiquidity }).where(eq(usersTable.id, r.userId));
+
+      const txId = `tx_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(n);
+
+      await db.insert(transactionsTable).values({
+        id: txId,
+        userId: r.userId,
+        type: "Principal Return",
+        fund: refundFundName,
+        date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+        amount: r.amount,
+      });
+
+      const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      await db.insert(notificationsTable).values({
+        id: notifId,
+        userId: r.userId,
+        title: "Principal Deposit Returned",
+        message: `Your initial deposit principal of ${fmt(r.amount)} for ${r.sectorTitle} has been credited to your available balance.`,
+        timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+        read: false,
+        type: "success",
+      });
+    }
   }
 }
 
-// Process auto-ROI for all active investments
-export async function processAutoROIForAll() {
-  const rows = await db.select().from(investmentsTable).where(eq(investmentsTable.status, "active"));
-  for (const r of rows) {
+// Process auto-ROI for a specific user synchronously
+export async function processAutoROIForUser(userId: number) {
+  // 1. Process active investments
+  const activeRows = await db.select().from(investmentsTable).where(and(eq(investmentsTable.userId, userId), eq(investmentsTable.status, "active")));
+  for (const r of activeRows) {
     const calculated = calculateAutoROI(r);
     await syncInvestmentIfNeeded(r, calculated);
+  }
+
+  // 2. Check for completed investments with missing principal deposit returns
+  const completedRows = await db.select().from(investmentsTable).where(and(eq(investmentsTable.userId, userId), eq(investmentsTable.status, "completed")));
+  for (const r of completedRows) {
+    await checkAndRefundMissingPrincipal(r);
+  }
+}
+
+// Process auto-ROI for all investments (Admin view)
+export async function processAutoROIForAll() {
+  const activeRows = await db.select().from(investmentsTable).where(eq(investmentsTable.status, "active"));
+  for (const r of activeRows) {
+    const calculated = calculateAutoROI(r);
+    await syncInvestmentIfNeeded(r, calculated);
+  }
+
+  const completedRows = await db.select().from(investmentsTable).where(eq(investmentsTable.status, "completed"));
+  for (const r of completedRows) {
+    await checkAndRefundMissingPrincipal(r);
   }
 }
 

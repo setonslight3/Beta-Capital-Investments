@@ -2,6 +2,7 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { db } from "@workspace/db";
 import { investmentsTable, transactionsTable, usersTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
+import { processAutoROIForUser } from "./investments";
 
 const router: IRouter = Router();
 
@@ -17,6 +18,8 @@ function requireAuth(req: Request, res: Response): number | null {
 router.get("/portfolio/summary", async (req: Request, res: Response) => {
   const userId = requireAuth(req, res);
   if (!userId) return;
+
+  await processAutoROIForUser(userId);
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   const investments = await db.select().from(investmentsTable).where(eq(investmentsTable.userId, userId));
@@ -50,6 +53,9 @@ router.get("/portfolio/summary", async (req: Request, res: Response) => {
 router.get("/liquidity", async (req: Request, res: Response) => {
   const userId = requireAuth(req, res);
   if (!userId) return;
+
+  await processAutoROIForUser(userId);
+
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   res.json({ liquidity: user?.liquidity ?? 0 });
 });

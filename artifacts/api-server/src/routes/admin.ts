@@ -7,6 +7,7 @@ import {
 import { eq, desc, sql } from "drizzle-orm";
 import { requireAdmin } from "../lib/admin-middleware";
 import { sendEmail, withdrawalEmailHtml, accountDeletedEmailHtml, broadcastEmailHtml, accountFrozenEmailHtml } from "../lib/mailer";
+import { processAutoROIForAll } from "./investments";
 
 const router: IRouter = Router();
 
@@ -223,6 +224,7 @@ router.post("/admin/users/:id/verify", requireAdmin, async (req: Request, res: R
 // ─── INVESTMENTS ───────────────────────────────────────────────────────────────
 
 router.get("/admin/investments", requireAdmin, async (_req: Request, res: Response) => {
+  await processAutoROIForAll();
   const investments = await db.select({
     id: investmentsTable.id,
     userId: investmentsTable.userId,

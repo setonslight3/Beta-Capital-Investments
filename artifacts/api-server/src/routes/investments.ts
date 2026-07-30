@@ -16,7 +16,7 @@ function requireAuth(req: Request, res: Response): number | null {
 
 // Automatic ROI calculation - serverless approach
 // Calculates ROI based on time elapsed since creation
-function calculateAutoROI(investment: any) {
+export function calculateAutoROI(investment: any) {
   if (investment.status !== "active") {
     return investment; // Don't recalculate for completed/withdrawn investments
   }
@@ -43,10 +43,11 @@ function calculateAutoROI(investment: any) {
 }
 
 // Sync investment to database if it has changed
-async function syncInvestmentIfNeeded(original: any, calculated: any) {
-  // Check if days or status changed
+export async function syncInvestmentIfNeeded(original: any, calculated: any) {
+  // Check if days, yield, or status changed
   if (calculated.daysActive !== original.daysActive || 
-      calculated.status !== original.status) {
+      calculated.status !== original.status ||
+      calculated.accruedYield !== original.accruedYield) {
     
     await db
       .update(investmentsTable)
@@ -59,18 +60,19 @@ async function syncInvestmentIfNeeded(original: any, calculated: any) {
     
     // If investment just completed (hit 30 days), credit the user
     if (calculated.status === "completed" && original.status === "active") {
-      await creditUserWithROI(original.userId, original.id, calculated.accruedYield, original.sectorTitle);
+      await creditUserWithROI(original.userId, original.id, original.amount, calculated.accruedYield, original.sectorTitle);
     }
   }
 }
 
-// Credit user with final ROI payout
-async function creditUserWithROI(userId: number, investmentId: string, roiAmount: number, sectorTitle: string) {
-  // Get user and update liquidity
+// Credit user with final ROI + Principal payout
+async function creditUserWithROI(userId: number, investmentId: string, principal: number, roiAmount: number, sectorTitle: string) {
+  // Get user and update liquidity with Principal + Profit
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!user) return;
   
-  const newLiquidity = (user.liquidity ?? 0) + roiAmount;
+  const totalPayout = principal + roiAmount;
+  const newLiquidity = (user.liquidity ?? 0) + totalPayout;
   await db.update(usersTable).set({ liquidity: newLiquidity }).where(eq(usersTable.id, userId));
   
   // Create transaction record
@@ -83,7 +85,7 @@ async function creditUserWithROI(userId: number, investmentId: string, roiAmount
     type: "ROI Payout",
     fund: sectorTitle,
     date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
-    amount: roiAmount,
+    amount: totalPayout,
   });
   
   // Create notification
@@ -92,40 +94,51 @@ async function creditUserWithROI(userId: number, investmentId: string, roiAmount
     id: notifId,
     userId,
     title: "Investment Matured",
-    message: `Your ${sectorTitle} investment has completed its 30-day term. ROI of ${fmt(roiAmount)} has been credited to your account.`,
+    message: `Your ${sectorTitle} investment of ${fmt(principal)} has completed its 30-day term. Total payout of ${fmt(totalPayout)} (${fmt(roiAmount)} ROI profit + principal) has been credited to your available balance.`,
     timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
     read: false,
     type: "success",
   });
 }
 
+// Process auto-ROI for a specific user synchronously
+export async function processAutoROIForUser(userId: number) {
+  const rows = await db.select().from(investmentsTable).where(and(eq(investmentsTable.userId, userId), eq(investmentsTable.status, "active")));
+  for (const r of rows) {
+    const calculated = calculateAutoROI(r);
+    await syncInvestmentIfNeeded(r, calculated);
+  }
+}
+
+// Process auto-ROI for all active investments
+export async function processAutoROIForAll() {
+  const rows = await db.select().from(investmentsTable).where(eq(investmentsTable.status, "active"));
+  for (const r of rows) {
+    const calculated = calculateAutoROI(r);
+    await syncInvestmentIfNeeded(r, calculated);
+  }
+}
+
 router.get("/investments", async (req: Request, res: Response) => {
   const userId = requireAuth(req, res);
   if (!userId) return;
   
+  // Process auto-ROI synchronously before returning
+  await processAutoROIForUser(userId);
+
   const rows = await db.select().from(investmentsTable).where(eq(investmentsTable.userId, userId));
   
-  // Calculate ROI automatically for each investment
-  const updatedRows = await Promise.all(rows.map(async (r) => {
-    const calculated = calculateAutoROI(r);
-    
-    // Sync to database if needed (async, don't wait)
-    syncInvestmentIfNeeded(r, calculated).catch(err => {
-      console.error("Failed to sync investment:", err);
-    });
-    
-    return {
-      id: calculated.id,
-      sectorId: calculated.sectorId,
-      sectorTitle: calculated.sectorTitle,
-      amount: calculated.amount,
-      startDateStamp: calculated.startDateStamp,
-      daysActive: calculated.daysActive,
-      dailyRate: calculated.dailyRate,
-      accruedYield: calculated.accruedYield,
-      tierName: calculated.tierName,
-      status: calculated.status,
-    };
+  const updatedRows = rows.map((r) => ({
+    id: r.id,
+    sectorId: r.sectorId,
+    sectorTitle: r.sectorTitle,
+    amount: r.amount,
+    startDateStamp: r.startDateStamp,
+    daysActive: r.daysActive,
+    dailyRate: r.dailyRate,
+    accruedYield: r.accruedYield,
+    tierName: r.tierName,
+    status: r.status,
   }));
   
   res.json(updatedRows);
